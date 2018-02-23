@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<title>Exercise 2018</title>
+<style>
+body {
+  font-family: HelveticaNeue, Helvetica Neue, Helvetica, Arial, sans-serif;
+  margin: 0;
+  padding: 5px;
+  background: #ddd;
+  display: grid;
+  grid-template-rows: auto 1fr;
+  grid-column-gap: 5px;
+  grid-template-columns: 300px 300px 300px;
+}
+h1 {
+  grid-column-start: 1;
+  grid-column-end: 3;
+  margin: 0;
+}
+h2 {
+  margin: 0 0 1em;
+}
+h3 {
+  margin: 1em 0 0 50px;
+}
+body > div {
+  padding: 5px;
+  background: #fff;
+}
+p {
+  margin: 0;
+  text-align: right;
+}
+svg {
+
+}
+</style>
+<h1>Exercise 2018 &#127947;</h1>
+<p id="d3-version"></p>
+<div>
+  <h2>Squat</h2>
+  <svg id="squat-weight" width="300" height="140"></svg>
+  <svg id="squat-reps" width="300" height="140"></svg>
+  <svg id="squat-tonnage" width="300" height="140"></svg>
+</div>
+<div>
+  <h2>Deadlift</h2>
+  <svg id="deadlift-weight" width="300" height="140"></svg>
+  <svg id="deadlift-reps" width="300" height="140"></svg>
+  <svg id="deadlift-tonnage" width="300" height="140"></svg>
+</div>
+<div>
+  <h2>Press</h2>
+  <svg id="press-weight" width="300" height="140"></svg>
+  <svg id="press-reps" width="300" height="140"></svg>
+  <svg id="press-tonnage" width="300" height="140"></svg>
+</div>
+<script src="d3.js"></script>
+<script>
+document.getElementById("d3-version").innerHTML = `d3 v <code>${
+  d3.version
+}</code>`;
+
+// see https://bl.ocks.org/mbostock/3883245
+const renderChart = (exercise, dim, data, dates) => {
+  var svg = d3.select(document.getElementById(`${exercise}-${dim}`)),
+    margin = { top: 10, right: 20, bottom: 30, left: 45 },
+    width = +svg.attr("width") - margin.left - margin.right,
+    height = +svg.attr("height") - margin.top - margin.bottom,
+    g = svg
+      .append("g")
+      .attr("transform", `translate(${margin.left},${margin.top})`);
+
+  var x = d3.scaleTime().rangeRound([0, width]);
+
+  var y = d3.scaleLinear().rangeRound([height, 0]);
+
+  var line = d3
+    .line()
+    .x(d => x(d.date))
+    .y(d => y(d[dim]));
+
+  const plate25lbs = "#689c5f";
+  const plate55lbs = "#993127";
+  const plate45lbs = "#3d4992";
+  const color = d3
+    .scaleOrdinal()
+    .domain(["deadlift", "squat", "press"])
+    .range([plate55lbs, plate45lbs, plate25lbs]);
+  x.domain(dates);
+  y.domain([
+    d3.min(data[exercise], d => d[dim]),
+    d3.max(data[exercise], d => d[dim])
+  ]);
+  g
+    .append("g")
+    .attr("transform", `translate(0,${height})`)
+    .call(d3.axisBottom(x).ticks(4))
+    .select(".domain")
+    .remove();
+  g
+    .append("g")
+    .call(d3.axisLeft(y).ticks(4))
+    .append("text")
+    .attr("fill", "#000")
+    .attr("transform", "rotate(-90)")
+    .attr("x", 0)
+    .attr("y", 6)
+    .attr("dy", "0.51em")
+    .attr("text-anchor", "end")
+    .text(dim);
+  g
+    .append("path")
+    .datum(data[exercise])
+    .attr("class", "line")
+    .attr("fill", "none")
+    .attr("stroke", color(exercise))
+    .attr("stroke-linejoin", "round")
+    .attr("stroke-linecap", "round")
+    .attr("stroke-width", 1.5)
+    .attr("d", line);
+  // see http://alignedleft.com/tutorials/d3/making-a-scatterplot
+  g
+    .selectAll("circle")
+    // .data(data[exercise])
+    .enter()
+    .append("circle")
+    // .attr("fill", color(exercise))
+    .attr("cx", d => x(d.date))
+    .attr("cy", d => y(d[dim]))
+    .attr("r", 5);
+  g
+    .selectAll("path.mark")
+    .data(data[exercise])
+    .enter()
+    .append("path")
+    .attr("class", "mark")
+    .attr("fill", color(exercise))
+    .attr("d", d => {
+      const xp = x(d.date);
+      const yp = y(d[dim]);
+      const di = 12;
+      const r = di / 2;
+      const h = di / 3;
+      // TODO consider if custom d3.symbol for the high / low / trap makes sense
+      if (d.variant === "high") {
+        return `M${xp - r},${yp} a1 0.8 0 1 1 ${di} 0`;
+      }
+      if (d.variant === "low") {
+        return `M${xp - r},${yp} a1 0.8 0 0 0 ${di} 0`;
+      }
+      if (d.variant === "trap") {
+        return `M${xp -
+          r},${yp} l${h},-${h}l${h},0l${h},${h}l-${h},${h}l-${h},0l-${h},-${h}`;
+      }
+      return `M${xp - r},${yp} a1 1 0 1 1 ${di} 0 M${xp -
+        r},${yp} a1 1 0 0 0 ${di} 0`;
+    });
+};
+
+// assume the csv is in the correct order so no sorting needed
+d3
+  .csv("2018.csv", r => {
+    return {
+      // assume date parse is sensible
+      date: new Date(r.date),
+      exercise: r.exercise.split(" ")[0],
+      variant: r.exercise.split(" ")[1],
+      tonnage: Number(r.tonnage),
+      weight: Number(r.weight),
+      reps: Number(r["total reps"])
+    };
+  })
+  .then(d => {
+    const nested = d3
+      .nest()
+      .key(r => r.exercise)
+      .object(d);
+    const dates = d3.extent(d, r => r.date);
+    renderChart("squat", "weight", nested, dates);
+    renderChart("deadlift", "weight", nested, dates);
+    renderChart("press", "weight", nested, dates);
+    renderChart("squat", "reps", nested, dates);
+    renderChart("deadlift", "reps", nested, dates);
+    renderChart("press", "reps", nested, dates);
+    renderChart("squat", "tonnage", nested, dates);
+    renderChart("deadlift", "tonnage", nested, dates);
+    renderChart("press", "tonnage", nested, dates);
+  });
+</script>
