@@ -54,8 +54,15 @@ svg text {
 }
 .tick {
 }
+.tons-total {
+  font-size: 18px;
+  color: #666;
+}
+#tons {
+  color: #000;
+}
 </style>
-<h1>Exercise 2018</h1>
+<h1>Exercise 2018 <span class="tons-total">tons lifted <span id="tons"></span></span></h1>
 <div class="squat">
   <h2>Squat</h2>
   <svg id="squat-weight"></svg>
@@ -216,6 +223,11 @@ d3
     };
   })
   .then(d => {
+    const pounds = d3.sum(d, r => r.tonnage);
+    document.getElementById("tons").innerHTML = (pounds / 2000).toLocaleString(
+      "en-US",
+      { maximumFractionDigits: 0 }
+    );
     const nested = d3
       .nest()
       .key(r => r.exercise)
