@@ -1,70 +1,93 @@
 <!DOCTYPE html>
+<html lang=en-us>
+<meta charset=utf-8>
 <title>Exercise 2018</title>
-<link rel="icon" href="deadlift.png">
+<meta name=viewport content="width=device-width,initial-scale=1">
+<link rel=icon href=deadlift.png>
 <style>
 body {
   font-family: HelveticaNeue, Helvetica Neue, Helvetica, Arial, sans-serif;
   margin: 0;
   padding: 5px;
+  box-sizing: content-box;
   background: #ddd;
   display: grid;
-  grid-template-rows: auto 1fr;
-  grid-column-gap: 5px;
-  grid-template-columns: 300px 300px 300px;
+  grid-gap: 5px;
+  grid-template-areas:
+    "header"
+    "squat"
+    "deadlift"
+    "press";
+}
+@media (min-width: 684px) {
+  body {
+    grid-template-columns: repeat(3, 1fr);
+    grid-template-areas:
+      "header header header"
+      "squat deadlift press";
+  }
 }
 h1 {
-  grid-column-start: 1;
-  grid-column-end: 3;
+  grid-area: header;
   margin: 0;
 }
 h2 {
-  margin: 0 0 0 45px;
+  margin: 5px 0 0 45px;
 }
 body > div {
-  padding: 5px;
   background: #fff;
 }
-p {
-  margin: 0;
-  text-align: right;
+.squat {
+  grid-area: squat;
+}
+.deadlift {
+  grid-area: deadlift;
+}
+.press {
+  grid-area: press;
 }
 svg {
-
+  display: block;
+}
+svg text {
+  font-size: 8px;
+}
+.tick {
 }
 </style>
 <h1>Exercise 2018</h1>
-<p id="d3-version"></p>
-<div>
+<div class="squat">
   <h2>Squat</h2>
-  <svg id="squat-weight" width="300" height="140"></svg>
-  <svg id="squat-reps" width="300" height="140"></svg>
-  <svg id="squat-tonnage" width="300" height="140"></svg>
+  <svg id="squat-weight"></svg>
+  <svg id="squat-reps"></svg>
+  <svg id="squat-tonnage"></svg>
 </div>
-<div>
+<div class="deadlift">
   <h2>Deadlift</h2>
-  <svg id="deadlift-weight" width="300" height="140"></svg>
-  <svg id="deadlift-reps" width="300" height="140"></svg>
-  <svg id="deadlift-tonnage" width="300" height="140"></svg>
+  <svg id="deadlift-weight"></svg>
+  <svg id="deadlift-reps"></svg>
+  <svg id="deadlift-tonnage"></svg>
 </div>
-<div>
+<div class="press">
   <h2>Press</h2>
-  <svg id="press-weight" width="300" height="140"></svg>
-  <svg id="press-reps" width="300" height="140"></svg>
-  <svg id="press-tonnage" width="300" height="140"></svg>
+  <svg id="press-weight"></svg>
+  <svg id="press-reps"></svg>
+  <svg id="press-tonnage"></svg>
 </div>
 <script src="d3.js"></script>
 <script>
-document.getElementById("d3-version").innerHTML = `d3 v <code>${
-  d3.version
-}</code>`;
+console.log(`d3 v${d3.version}`);
 
 // see https://bl.ocks.org/mbostock/3883245
-const renderChart = (exercise, dim, data, dates) => {
-  var svg = d3.select(document.getElementById(`${exercise}-${dim}`)),
-    margin = { top: 10, right: 20, bottom: 30, left: 45 },
-    width = +svg.attr("width") - margin.left - margin.right,
-    height = +svg.attr("height") - margin.top - margin.bottom,
+const renderChart = (exercise, dim, data, dates, w, h) => {
+  var svg = d3.select(document.getElementById(`${exercise}-${dim}`));
+  svg.selectAll("*").remove();
+  var margin = { top: 10, right: 20, bottom: 30, left: 45 },
+    width = w - margin.left - margin.right,
+    height = h - margin.top - margin.bottom,
     g = svg
+      .attr("width", w)
+      .attr("height", h)
       .append("g")
       .attr("transform", `translate(${margin.left},${margin.top})`);
 
@@ -92,12 +115,12 @@ const renderChart = (exercise, dim, data, dates) => {
   g
     .append("g")
     .attr("transform", `translate(0,${height})`)
-    .call(d3.axisBottom(x).ticks(4))
+    .call(d3.axisBottom(x).ticks(5))
     .select(".domain")
     .remove();
   g
     .append("g")
-    .call(d3.axisLeft(y).ticks(4))
+    .call(d3.axisLeft(y).ticks(5))
     .append("text")
     .attr("fill", "#000")
     .attr("transform", "rotate(-90)")
@@ -105,7 +128,11 @@ const renderChart = (exercise, dim, data, dates) => {
     .attr("y", 6)
     .attr("dy", "0.51em")
     .attr("text-anchor", "end")
-    .text(dim);
+    .text(
+      dim === "weight"
+        ? "weight (lbs)"
+        : dim === "tonnage" ? "tonnage (lbs)" : dim
+    );
   g
     .append("path")
     .datum(data[exercise])
@@ -117,15 +144,15 @@ const renderChart = (exercise, dim, data, dates) => {
     .attr("stroke-width", 1.5)
     .attr("d", line);
   // see http://alignedleft.com/tutorials/d3/making-a-scatterplot
-  g
-    .selectAll("circle")
-    // .data(data[exercise])
-    .enter()
-    .append("circle")
-    // .attr("fill", color(exercise))
-    .attr("cx", d => x(d.date))
-    .attr("cy", d => y(d[dim]))
-    .attr("r", 5);
+  // g
+  //   .selectAll("circle")
+  //   // .data(data[exercise])
+  //   .enter()
+  //   .append("circle")
+  //   // .attr("fill", color(exercise))
+  //   .attr("cx", d => x(d.date))
+  //   .attr("cy", d => y(d[dim]))
+  //   .attr("r", 5);
   g
     .selectAll("path.mark")
     .data(data[exercise])
@@ -136,7 +163,7 @@ const renderChart = (exercise, dim, data, dates) => {
     .attr("d", d => {
       const xp = x(d.date);
       const yp = y(d[dim]);
-      const di = 12;
+      const di = 9;
       const r = di / 2;
       const h = di / 3;
       // TODO consider if custom d3.symbol for the high / low / trap makes sense
@@ -154,6 +181,26 @@ const renderChart = (exercise, dim, data, dates) => {
         r},${yp} a1 1 0 0 0 ${di} 0`;
     });
 };
+
+// https://developer.mozilla.org/en-US/docs/Web/Events/resize#requestAnimationFrame_customEvent
+(function() {
+  var throttle = function(type, name, obj) {
+    obj = obj || window;
+    var running = false;
+    var func = function() {
+      if (running) {
+        return;
+      }
+      running = true;
+      requestAnimationFrame(function() {
+        obj.dispatchEvent(new CustomEvent(name));
+        running = false;
+      });
+    };
+    obj.addEventListener(type, func);
+  };
+  throttle("resize", "optimizedResize");
+})();
 
 // assume the csv is in the correct order so no sorting needed
 d3
@@ -174,14 +221,30 @@ d3
       .key(r => r.exercise)
       .object(d);
     const dates = d3.extent(d, r => r.date);
-    renderChart("squat", "weight", nested, dates);
-    renderChart("deadlift", "weight", nested, dates);
-    renderChart("press", "weight", nested, dates);
-    renderChart("squat", "reps", nested, dates);
-    renderChart("deadlift", "reps", nested, dates);
-    renderChart("press", "reps", nested, dates);
-    renderChart("squat", "tonnage", nested, dates);
-    renderChart("deadlift", "tonnage", nested, dates);
-    renderChart("press", "tonnage", nested, dates);
+    const redraw = () => {
+      // magic constants in portrait and landscape respectively are
+      // 4 1 2 and 6 8 4
+      const windowWidth = window.innerWidth;
+      const www = Math.floor((windowWidth - 20) / 3);
+      const hhh = Math.floor(www / 2.1);
+      const ww = windowWidth - 10;
+      const hh = Math.floor(ww / 2.85);
+      const IS_NARROW = ww < 684;
+      const w = IS_NARROW ? ww : www;
+      const h = IS_NARROW ? hh : hhh;
+      renderChart("squat", "weight", nested, dates, w, h);
+      renderChart("deadlift", "weight", nested, dates, w, h);
+      renderChart("press", "weight", nested, dates, w, h);
+      renderChart("squat", "reps", nested, dates, w, h);
+      renderChart("deadlift", "reps", nested, dates, w, h);
+      renderChart("press", "reps", nested, dates, w, h);
+      renderChart("squat", "tonnage", nested, dates, w, h);
+      renderChart("deadlift", "tonnage", nested, dates, w, h);
+      renderChart("press", "tonnage", nested, dates, w, h);
+    };
+    redraw();
+    window.addEventListener("optimizedResize", function() {
+      redraw();
+    });
   });
 </script>
