@@ -55,15 +55,21 @@ svg text {
 }
 .tick {
 }
-.tons-total {
+.totals {
   font-size: 18px;
-  color: #666;
 }
-#tons {
-  color: #000;
+.totals .label {
+  color: #666;
+  padding-left: 10px;
 }
 </style>
-<h1>Exercise 2018 <span class="tons-total">tons lifted <span id="tons"></span></span></h1>
+<h1>Exercise 2018
+<span class="totals">
+  <span class="label">tons</span>
+  <span id="tons"></span>
+  <span class="label">wilks</span>
+  <span id="wilks"></span>
+</span></h1>
 <div class="squat">
   <h2>Squat</h2>
   <svg id="squat-weight"></svg>
@@ -85,6 +91,31 @@ svg text {
 <script src="d3.js"></script>
 <script>
 console.log(`d3 v${d3.version}`);
+
+// see https://en.wikipedia.org/wiki/Wilks_Coefficient#Equation
+// Values for men are:
+const a = -216.0475144;
+const b = 16.2606339;
+const c = -0.002388645;
+const d = -0.00113732;
+const e = 7.01863e-6;
+const f = -1.291e-8;
+const lbs_in_kg = 2.20462262185;
+// const lbs_in_kg = 2.2;
+// Assume pounds for both bodyweight and lifted amounts
+const wilksFormula = (bodyweight, lifted) => {
+  const lifted_kg = lifted / lbs_in_kg;
+  const x = bodyweight / lbs_in_kg;
+  const denominator =
+    a +
+    b * x +
+    c * Math.pow(x, 2) +
+    d * Math.pow(x, 3) +
+    e * Math.pow(x, 4) +
+    f * Math.pow(x, 5);
+  const wilks_coefficient = 500 / denominator;
+  return wilks_coefficient * lifted_kg;
+};
 
 // see https://bl.ocks.org/mbostock/3883245
 const renderChart = (exercise, dim, data, dates, w, h) => {
@@ -237,6 +268,16 @@ d3
       .key(r => r.exercise)
       .object(d);
     const dates = d3.extent(d, r => r.date);
+    const maxPerExercise = d3
+      .nest()
+      .key(r => r.exercise)
+      .rollup(a => d3.max(a, e => e.weight))
+      .object(d);
+    const maxTotal = d3.sum(d3.values(maxPerExercise));
+    document.getElementById("wilks").innerHTML = wilksFormula(
+      200, // hardcoded bodyweight
+      maxTotal
+    ).toLocaleString("en-US", { maximumFractionDigits: 0 });
     const redraw = () => {
       // magic constants in portrait and landscape respectively are
       // 4 1 2 and 6 8 4
