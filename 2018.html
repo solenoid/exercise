@@ -139,7 +139,9 @@ const renderChart = (exercise, dim, data, dates, w, h) => {
     .text(
       dim === "weight"
         ? "weight (lbs)"
-        : dim === "tonnage" ? "tonnage (lbs)" : dim
+        : dim === "tonnage"
+          ? "tonnage (lbs)"
+          : dim === "reps" ? "reps (total)" : dim
     );
   g
     .append("path")
