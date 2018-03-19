@@ -266,7 +266,7 @@ d3
       exercise: r.exercise.split(" ")[0],
       variant: r.exercise.split(" ")[1],
       tonnage: Number(r.tonnage),
-      weight: Number(r.weight),
+      weight: Number(r["max weight"]),
       reps: Number(r["total reps"])
     };
   })
@@ -316,7 +316,10 @@ d3
       .key(r => r.exercise)
       .rollup(a => d3.max(a, e => e.weight))
       .object(d);
-    const maxTotal = d3.sum(d3.values(maxPerExercise));
+
+    // NOTE this only pays attention to the 3 exercises to track the total for
+    const maxTotal =
+      maxPerExercise.press + maxPerExercise.squat + maxPerExercise.deadlift;
     document.getElementById("wilks").innerHTML = wilksFormula(
       200, // hardcoded bodyweight
       maxTotal
