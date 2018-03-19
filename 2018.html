@@ -154,9 +154,9 @@ const renderChart = (exercise, dim, data, dates, w, h) => {
     .x(d => x(d.date))
     .y(d => y(d[dim]));
 
-  const plate25lbs = "#689c5f";
-  const plate55lbs = "#993127";
-  const plate45lbs = "#3d4992";
+  const plate25lbs = "rgb(55, 106, 48)";
+  const plate55lbs = "rgb(151, 70, 59)";
+  const plate45lbs = "rgb(82, 89, 155)";
   const color = d3
     .scaleOrdinal()
     .domain(["deadlift", "squat", "press"])
