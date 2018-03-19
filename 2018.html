@@ -53,10 +53,12 @@ body > div {
   grid-area: cal;
   background: #ddd;
   position: relative;
+  font-size: 11px;
+  line-height: 19px;
 }
 .cal div {
   position: absolute;
-  text-align: center;
+  text-align: right;
 }
 svg {
   display: block;
@@ -289,24 +291,26 @@ d3
       .rollup(a => d3.sum(a, e => e.tonnage))
       .map(d);
     const maxTonnage = d3.max(mapped.values().map(m => d3.max(m.values())));
-    const c = d3.scaleSequential(d3.interpolateYlGn).domain([0, maxTonnage]);
+    const c = d3.scaleSequential(d3.interpolateBuPu).domain([0, maxTonnage]);
     const calData = d3
       .nest()
       .key(r => dateFns.getISOWeek(r.date))
       .key(r => dateFns.getISODay(r.date))
       .rollup(a => d3.sum(a, e => e.tonnage))
       .object(d);
-    let calRoot = d3.select(".cal");
-    const days = [null, "M", "T", "W", "T", "F", "S", "S"];
+    let calRoot = d3.select(".cal").style("height", 20 * 8 + "px");
+    const days = [null, "Mo", "Tu", "We", "Th", "Fr", "Sa", "Su"];
     for (let i = 0; i <= maxWeek; i++) {
       for (let j = 0; j <= 7; j++) {
         calRoot
           .append("div")
           .style("background", c((calData[i] || {})[j] || 0))
-          .style("width", "18px")
+          .style("width", "16px")
+          .style("padding-right", "2px")
           .style("height", "18px")
           .style("left", i * 20 + "px")
           .style("top", j * 20 + "px")
+          // .attr("title", (calData[i] || {})[j] || 0)
           .text(i !== 0 ? (j === 0 ? i : null) : days[j]);
       }
     }
