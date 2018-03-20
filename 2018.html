@@ -284,7 +284,8 @@ d3
       .object(d);
     const [startDate, endDate] = d3.extent(d, r => r.date);
     // NOTE this avoids mutating the startDate in the data
-    const startOfMonth = new Date(+startDate).setDate(1);
+    let startOfMonth = new Date(+startDate);
+    startOfMonth.setDate(1);
     let dates = [startOfMonth, endDate];
     const maxWeek = d3.max(d.map(r => dateFns.getISOWeek(r.date)));
     const mapped = d3
