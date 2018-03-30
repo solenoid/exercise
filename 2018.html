@@ -112,9 +112,15 @@ svg text {
   <svg id="press-tonnage"></svg>
 </div>
 <div class="cal">
-  <h4>Daily tonnage in pounds for weeks in 2018</h4>
-  <div class="cal-grid"></div>
+  <h4>Total Daily tonnage in pounds for weeks in 2018</h4>
+  <div class="cal-grid cal-grid-total"></div>
   <svg id="cal-legend" width="160" height="160"></svg>
+  <h4>Squat tonnage</h4>
+  <div class="cal-grid cal-grid-squat"></div>
+  <h4>Deadlift tonnage</h4>
+  <div class="cal-grid cal-grid-deadlift"></div>
+  <h4>Press tonnage</h4>
+  <div class="cal-grid cal-grid-press"></div>
 </div>
 <script src="d3.js"></script>
 <script src="d3-legend.js"></script>
@@ -311,27 +317,52 @@ d3
       .nest()
       .key(r => dateFns.getISOWeek(r.date))
       .key(r => dateFns.getISODay(r.date))
-      .rollup(a => d3.sum(a, e => e.tonnage))
+      .rollup(a => ({
+        total: d3.sum(a, e => e.tonnage),
+        squat: d3.sum(a.filter(f => f.exercise === "squat"), e => e.tonnage),
+        press: d3.sum(a.filter(f => f.exercise === "press"), e => e.tonnage),
+        deadlift: d3.sum(
+          a.filter(f => f.exercise === "deadlift"),
+          e => e.tonnage
+        )
+      }))
       .object(d);
-    let calRoot = d3
-      .select(".cal-grid")
+    let calTotalRoot = d3
+      .select(".cal-grid-total")
       .style("height", 20 * 8 + "px")
       .style("width", 20 * (maxWeek + 1) + "px");
-    let cellValue;
+    let calSquatRoot = d3
+      .select(".cal-grid-squat")
+      .style("height", 20 * 8 + "px")
+      .style("width", 20 * (maxWeek + 1) + "px");
+    let calDeadliftRoot = d3
+      .select(".cal-grid-deadlift")
+      .style("height", 20 * 8 + "px")
+      .style("width", 20 * (maxWeek + 1) + "px");
+    let calPressRoot = d3
+      .select(".cal-grid-press")
+      .style("height", 20 * 8 + "px")
+      .style("width", 20 * (maxWeek + 1) + "px");
     const days = [null, "Mo", "Tu", "We", "Th", "Fr", "Sa", "Su"];
+    const appendDays = (root, d, i, j, f) => {
+      const val = ((d[i] || {})[j] || {})[f] || 0;
+      root
+        .append("div")
+        .style("background", c(val))
+        .style("width", "16px")
+        .style("padding-right", "2px")
+        .style("height", "18px")
+        .style("left", i * 20 + "px")
+        .style("top", j * 20 + "px")
+        .attr("title", val.toLocaleString())
+        .text(i !== 0 ? (j === 0 ? i : null) : days[j]);
+    };
     for (let i = 0; i <= maxWeek; i++) {
       for (let j = 0; j <= 7; j++) {
-        cellValue = (calData[i] || {})[j] || 0;
-        calRoot
-          .append("div")
-          .style("background", c(cellValue))
-          .style("width", "16px")
-          .style("padding-right", "2px")
-          .style("height", "18px")
-          .style("left", i * 20 + "px")
-          .style("top", j * 20 + "px")
-          .attr("title", cellValue.toLocaleString())
-          .text(i !== 0 ? (j === 0 ? i : null) : days[j]);
+        appendDays(calTotalRoot, calData, i, j, "total");
+        appendDays(calSquatRoot, calData, i, j, "squat");
+        appendDays(calDeadliftRoot, calData, i, j, "deadlift");
+        appendDays(calPressRoot, calData, i, j, "press");
       }
     }
 
