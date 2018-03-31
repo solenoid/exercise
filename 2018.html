@@ -281,16 +281,31 @@ const renderChart = (exercise, dim, data, dates, w, h) => {
 })();
 
 // assume the csv is in the correct order so no sorting needed
+// assume there are only ever 10 sets to pay attention to
+const ALL_SETS = d3.range(1, 11).map(s => `set${s}`);
 d3
   .csv("2018.csv", r => {
+    const recordedMaxWeight = Number(r["max weight"]);
+    let allSets = ALL_SETS.map(s => {
+      const raw = r[s] || "";
+      if (raw.length === 0) return null;
+      const parts = raw.split("x");
+      let info = {};
+      info.weight = parts.length === 1 ? recordedMaxWeight : Number(parts[0]);
+      info.reps = d3.sum(
+        parts[parts.length - 1].split("|").map(n => Number(n))
+      );
+      info.tonnage = info.weight * info.reps;
+      return info;
+    }).filter(d => d);
     return {
       // assume date parse is sensible
       date: new Date(r.date),
       exercise: r.exercise.split(" ")[0],
       variant: r.exercise.split(" ")[1],
-      tonnage: Number(r.tonnage),
-      weight: Number(r["max weight"]),
-      reps: Number(r["total reps"])
+      tonnage: d3.sum(allSets, d => d.tonnage),
+      weight: d3.max(allSets.map(d => d.weight)),
+      reps: d3.sum(allSets.map(d => d.reps))
     };
   })
   .then(d => {
