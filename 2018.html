@@ -18,15 +18,16 @@ body {
     "squat"
     "deadlift"
     "press"
+    "bench"
     "cal";
 }
 @media (min-width: 684px) {
   body {
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(4, 1fr);
     grid-template-areas:
-      "header header header"
-      "squat deadlift press"
-      "cal cal cal";
+      "header header header header"
+      "squat deadlift press bench"
+      "cal cal cal cal";
   }
 }
 h2 {
@@ -51,6 +52,9 @@ body > div {
 }
 .press {
   grid-area: press;
+}
+.bench {
+  grid-area: bench;
 }
 .cal {
   grid-area: cal;
@@ -86,12 +90,14 @@ svg text {
   padding-left: 10px;
 }
 </style>
-<h2>Exercise 2018
+<h2>2018
 <span class="totals">
   <span class="label">tons</span>
   <span id="tons"></span>
-  <span class="label">wilks</span>
-  <span id="wilks"></span>
+  <span class="label">wilksP</span>
+  <span id="wilks-p"></span>
+  <span class="label">wilksB</span>
+  <span id="wilks-b"></span>
 </span></h2>
 <div class="squat">
   <h3>Squat</h3>
@@ -111,6 +117,12 @@ svg text {
   <svg id="press-reps"></svg>
   <svg id="press-tonnage"></svg>
 </div>
+<div class="bench">
+  <h3>Bench</h3>
+  <svg id="bench-weight"></svg>
+  <svg id="bench-reps"></svg>
+  <svg id="bench-tonnage"></svg>
+</div>
 <div class="cal">
   <h4>Total Daily tonnage in pounds for weeks in 2018</h4>
   <div class="cal-grid cal-grid-total"></div>
@@ -121,6 +133,8 @@ svg text {
   <div class="cal-grid cal-grid-deadlift"></div>
   <h4>Press tonnage</h4>
   <div class="cal-grid cal-grid-press"></div>
+  <h4>Bench tonnage</h4>
+  <div class="cal-grid cal-grid-bench"></div>
 </div>
 <script src="d3.js"></script>
 <script src="d3-legend.js"></script>
@@ -336,6 +350,7 @@ d3
         total: d3.sum(a, e => e.tonnage),
         squat: d3.sum(a.filter(f => f.exercise === "squat"), e => e.tonnage),
         press: d3.sum(a.filter(f => f.exercise === "press"), e => e.tonnage),
+        bench: d3.sum(a.filter(f => f.exercise === "bench"), e => e.tonnage),
         deadlift: d3.sum(
           a.filter(f => f.exercise === "deadlift"),
           e => e.tonnage
@@ -358,6 +373,10 @@ d3
       .select(".cal-grid-press")
       .style("height", 20 * 8 + "px")
       .style("width", 20 * (maxWeek + 1) + "px");
+    let calBenchRoot = d3
+      .select(".cal-grid-bench")
+      .style("height", 20 * 8 + "px")
+      .style("width", 20 * (maxWeek + 1) + "px");
     const days = [null, "Mo", "Tu", "We", "Th", "Fr", "Sa", "Su"];
     const appendDays = (root, d, i, j, f) => {
       const val = ((d[i] || {})[j] || {})[f] || 0;
@@ -378,6 +397,7 @@ d3
         appendDays(calSquatRoot, calData, i, j, "squat");
         appendDays(calDeadliftRoot, calData, i, j, "deadlift");
         appendDays(calPressRoot, calData, i, j, "press");
+        appendDays(calBenchRoot, calData, i, j, "bench");
       }
     }
 
@@ -418,17 +438,25 @@ d3
       .object(d);
 
     // NOTE this only pays attention to the 3 exercises to track the total for
-    const maxTotal =
+    const maxPressTotal =
       maxPerExercise.press + maxPerExercise.squat + maxPerExercise.deadlift;
-    document.getElementById("wilks").innerHTML = wilksFormula(
-      200, // hardcoded bodyweight
-      maxTotal
+    const maxBenchTotal =
+      maxPerExercise.bench + maxPerExercise.squat + maxPerExercise.deadlift;
+    // hardcoded bodyweight
+    const BODY_WEIGHT = 200;
+    document.getElementById("wilks-p").innerHTML = wilksFormula(
+      BODY_WEIGHT,
+      maxPressTotal
+    ).toLocaleString("en-US", { maximumFractionDigits: 0 });
+    document.getElementById("wilks-b").innerHTML = wilksFormula(
+      BODY_WEIGHT,
+      maxBenchTotal
     ).toLocaleString("en-US", { maximumFractionDigits: 0 });
     const redraw = () => {
       // magic constants in portrait and landscape respectively are
       // 4 1 2 and 6 8 4
       const windowWidth = window.innerWidth;
-      const www = Math.floor((windowWidth - 20) / 3);
+      const www = Math.floor((windowWidth - 20) / 4);
       const hhh = Math.floor(www / 2.1);
       const ww = windowWidth - 10;
       const hh = Math.floor(ww / 2.85);
@@ -438,12 +466,15 @@ d3
       renderChart("squat", "weight", nested, dates, w, h);
       renderChart("deadlift", "weight", nested, dates, w, h);
       renderChart("press", "weight", nested, dates, w, h);
+      renderChart("bench", "weight", nested, dates, w, h);
       renderChart("squat", "reps", nested, dates, w, h);
       renderChart("deadlift", "reps", nested, dates, w, h);
       renderChart("press", "reps", nested, dates, w, h);
+      renderChart("bench", "reps", nested, dates, w, h);
       renderChart("squat", "tonnage", nested, dates, w, h);
       renderChart("deadlift", "tonnage", nested, dates, w, h);
       renderChart("press", "tonnage", nested, dates, w, h);
+      renderChart("bench", "tonnage", nested, dates, w, h);
     };
     redraw();
     window.addEventListener("optimizedResize", function() {
