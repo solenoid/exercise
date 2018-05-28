@@ -136,6 +136,7 @@ svg text {
   <h4>Bench tonnage</h4>
   <div class="cal-grid cal-grid-bench"></div>
 </div>
+<span id="variants"></span>
 <script src="d3.js"></script>
 <script src="d3-legend.js"></script>
 <script src="date_fns.js"></script>
@@ -317,12 +318,30 @@ d3
       date: new Date(r.date),
       exercise: r.exercise.split(" ")[0],
       variant: r.exercise.split(" ")[1],
+      competition:
+        r.exercise === "deadlift conventional" ||
+        r.exercise === "squat low" ||
+        r.exercise === "press overhead" ||
+        r.exercise === "bench",
       tonnage: d3.sum(allSets, d => d.tonnage),
       weight: d3.max(allSets.map(d => d.weight)),
       reps: d3.sum(allSets.map(d => d.reps))
     };
   })
   .then(d => {
+    let u = new URL(document.location);
+    let showAllOnly = null == u.searchParams.get("comp");
+    if (showAllOnly) {
+      u.search = "?comp";
+    } else {
+      u.search = "";
+      d = d.filter(r => r.competition);
+    }
+    document.getElementById("variants").innerHTML = `<p>Showing ${
+      showAllOnly ? "all variants" : "comp only"
+    }</p><p><a href="${u.toString()}">See ${
+      showAllOnly ? "comp only" : "all variants"
+    } instead</a></p>`;
     const pounds = d3.sum(d, r => r.tonnage);
     document.getElementById("tons").innerHTML = (pounds / 2000).toLocaleString(
       "en-US",
