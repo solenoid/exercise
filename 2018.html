@@ -202,14 +202,12 @@ const renderChart = (exercise, dim, data, dates, w, h) => {
     d3.min(data[exercise], d => d[dim]),
     d3.max(data[exercise], d => d[dim])
   ]);
-  g
-    .append("g")
+  g.append("g")
     .attr("transform", `translate(0,${height})`)
     .call(d3.axisBottom(x).ticks(5))
     .select(".domain")
     .remove();
-  g
-    .append("g")
+  g.append("g")
     .attr("transform", `translate(${width},0)`)
     .call(d3.axisRight(y).ticks(5))
     .append("text")
@@ -224,10 +222,11 @@ const renderChart = (exercise, dim, data, dates, w, h) => {
         ? "max weight (lbs)"
         : dim === "tonnage"
           ? "tonnage (lbs)"
-          : dim === "reps" ? "reps (total)" : dim
+          : dim === "reps"
+            ? "reps (total)"
+            : dim
     );
-  g
-    .append("path")
+  g.append("path")
     .datum(data[exercise])
     .attr("class", "line")
     .attr("fill", "none")
@@ -237,8 +236,7 @@ const renderChart = (exercise, dim, data, dates, w, h) => {
     .attr("stroke-width", 1.5)
     .attr("d", line);
   // see http://alignedleft.com/tutorials/d3/making-a-scatterplot
-  // g
-  //   .selectAll("circle")
+  // g.selectAll("circle")
   //   // .data(data[exercise])
   //   .enter()
   //   .append("circle")
@@ -246,8 +244,7 @@ const renderChart = (exercise, dim, data, dates, w, h) => {
   //   .attr("cx", d => x(d.date))
   //   .attr("cy", d => y(d[dim]))
   //   .attr("r", 5);
-  g
-    .selectAll("path.mark")
+  g.selectAll("path.mark")
     .data(data[exercise])
     .enter()
     .append("path")
@@ -298,206 +295,205 @@ const renderChart = (exercise, dim, data, dates, w, h) => {
 // assume the csv is in the correct order so no sorting needed
 // assume there are only ever 10 sets to pay attention to
 const ALL_SETS = d3.range(1, 11).map(s => `set${s}`);
-d3
-  .csv("2018.csv", r => {
-    const recordedMaxWeight = Number(r["max weight"]);
-    let allSets = ALL_SETS.map(s => {
-      const raw = r[s] || "";
-      if (raw.length === 0) return null;
-      const parts = raw.split("x");
-      let info = {};
-      info.weight = parts.length === 1 ? recordedMaxWeight : Number(parts[0]);
-      info.reps = d3.sum(
-        parts[parts.length - 1].split("|").map(n => Number(n))
-      );
-      info.tonnage = info.weight * info.reps;
-      return info;
-    }).filter(d => d);
-    return {
-      // assume date parse is sensible
-      date: new Date(r.date),
-      exercise: r.exercise.split(" ")[0],
-      variant: r.exercise.split(" ")[1],
-      competition:
-        r.exercise === "deadlift conventional" ||
-        r.exercise === "squat low" ||
-        r.exercise === "press overhead" ||
-        r.exercise === "bench",
-      tonnage: d3.sum(allSets, d => d.tonnage),
-      weight: d3.max(allSets.map(d => d.weight)),
-      reps: d3.sum(allSets.map(d => d.reps))
-    };
-  })
-  .then(d => {
-    let u = new URL(document.location);
-    let showAllOnly = null == u.searchParams.get("comp");
-    if (showAllOnly) {
-      u.search = "?comp";
-    } else {
-      u.search = "";
-      d = d.filter(r => r.competition);
+d3.csv("2018.csv", r => {
+  const recordedMaxWeight = Number(r["max weight"]);
+  let allSets = ALL_SETS.map(s => {
+    const raw = r[s] || "";
+    if (raw.length === 0) return null;
+    const parts = raw.split("x");
+    let info = {};
+    info.weight = parts.length === 1 ? recordedMaxWeight : Number(parts[0]);
+    info.reps = d3.sum(parts[parts.length - 1].split("|").map(n => Number(n)));
+    info.tonnage = info.weight * info.reps;
+    return info;
+  }).filter(d => d);
+  return {
+    // assume date parse is sensible
+    date: new Date(r.date),
+    exercise: r.exercise.split(" ")[0],
+    variant: r.exercise.split(" ")[1],
+    competition:
+      r.exercise === "deadlift conventional" ||
+      r.exercise === "squat low" ||
+      r.exercise === "press overhead" ||
+      r.exercise === "bench",
+    tonnage: d3.sum(allSets, d => d.tonnage),
+    weight: d3.max(allSets.map(d => d.weight)),
+    reps: d3.sum(allSets.map(d => d.reps))
+  };
+}).then(d => {
+  let u = new URL(document.location);
+  let showAllOnly = null == u.searchParams.get("comp");
+  if (showAllOnly) {
+    u.search = "?comp";
+  } else {
+    u.search = "";
+    d = d.filter(r => r.competition);
+  }
+  document.getElementById("variants").innerHTML = `<p>Showing ${
+    showAllOnly ? "all variants" : "comp only"
+  }</p><p><a href="${u.toString()}">See ${
+    showAllOnly ? "comp only" : "all variants"
+  } instead</a></p>`;
+  const pounds = d3.sum(d, r => r.tonnage);
+  document.getElementById("tons").innerHTML = (pounds / 2000).toLocaleString(
+    "en-US",
+    { maximumFractionDigits: 0 }
+  );
+  const nested = d3
+    .nest()
+    .key(r => r.exercise)
+    .object(d);
+  const [startDate, endDate] = d3.extent(d, r => r.date);
+  // NOTE this avoids mutating the startDate in the data
+  let startOfMonth = new Date(+startDate);
+  startOfMonth.setDate(1);
+  let dates = [startOfMonth, endDate];
+  const maxWeek = d3.max(d.map(r => dateFns.getISOWeek(r.date)));
+  const c = d3
+    .scaleThreshold()
+    .domain([1000, 5000, 7500, 10000])
+    .range(d3.schemeBuPu[5]);
+  const calData = d3
+    .nest()
+    .key(r => dateFns.getISOWeek(r.date))
+    .key(r => dateFns.getISODay(r.date))
+    .rollup(a => ({
+      total: d3.sum(a, e => e.tonnage),
+      squat: d3.sum(a.filter(f => f.exercise === "squat"), e => e.tonnage),
+      press: d3.sum(a.filter(f => f.exercise === "press"), e => e.tonnage),
+      bench: d3.sum(a.filter(f => f.exercise === "bench"), e => e.tonnage),
+      deadlift: d3.sum(a.filter(f => f.exercise === "deadlift"), e => e.tonnage)
+    }))
+    .object(d);
+  let calTotalRoot = d3
+    .select(".cal-grid-total")
+    .style("height", 20 * 8 + "px")
+    .style("width", 20 * (maxWeek + 1) + "px");
+  let calSquatRoot = d3
+    .select(".cal-grid-squat")
+    .style("height", 20 * 8 + "px")
+    .style("width", 20 * (maxWeek + 1) + "px");
+  let calDeadliftRoot = d3
+    .select(".cal-grid-deadlift")
+    .style("height", 20 * 8 + "px")
+    .style("width", 20 * (maxWeek + 1) + "px");
+  let calPressRoot = d3
+    .select(".cal-grid-press")
+    .style("height", 20 * 8 + "px")
+    .style("width", 20 * (maxWeek + 1) + "px");
+  let calBenchRoot = d3
+    .select(".cal-grid-bench")
+    .style("height", 20 * 8 + "px")
+    .style("width", 20 * (maxWeek + 1) + "px");
+  const days = [null, "Mo", "Tu", "We", "Th", "Fr", "Sa", "Su"];
+  const appendDays = (root, d, i, j, f) => {
+    const val = ((d[i] || {})[j] || {})[f] || 0;
+    root
+      .append("div")
+      .style("background", c(val))
+      .style("width", "16px")
+      .style("padding-right", "2px")
+      .style("height", "18px")
+      .style("left", i * 20 + "px")
+      .style("top", j * 20 + "px")
+      .attr("title", val.toLocaleString())
+      .text(i !== 0 ? (j === 0 ? i : null) : days[j]);
+  };
+  for (let i = 0; i <= maxWeek; i++) {
+    for (let j = 0; j <= 7; j++) {
+      appendDays(calTotalRoot, calData, i, j, "total");
+      appendDays(calSquatRoot, calData, i, j, "squat");
+      appendDays(calDeadliftRoot, calData, i, j, "deadlift");
+      appendDays(calPressRoot, calData, i, j, "press");
+      appendDays(calBenchRoot, calData, i, j, "bench");
     }
-    document.getElementById("variants").innerHTML = `<p>Showing ${
-      showAllOnly ? "all variants" : "comp only"
-    }</p><p><a href="${u.toString()}">See ${
-      showAllOnly ? "comp only" : "all variants"
-    } instead</a></p>`;
-    const pounds = d3.sum(d, r => r.tonnage);
-    document.getElementById("tons").innerHTML = (pounds / 2000).toLocaleString(
-      "en-US",
-      { maximumFractionDigits: 0 }
-    );
-    const nested = d3
-      .nest()
-      .key(r => r.exercise)
-      .object(d);
-    const [startDate, endDate] = d3.extent(d, r => r.date);
-    // NOTE this avoids mutating the startDate in the data
-    let startOfMonth = new Date(+startDate);
-    startOfMonth.setDate(1);
-    let dates = [startOfMonth, endDate];
-    const maxWeek = d3.max(d.map(r => dateFns.getISOWeek(r.date)));
-    const c = d3
-      .scaleThreshold()
-      .domain([1000, 5000, 7500, 10000])
-      .range(d3.schemeBuPu[5]);
-    const calData = d3
-      .nest()
-      .key(r => dateFns.getISOWeek(r.date))
-      .key(r => dateFns.getISODay(r.date))
-      .rollup(a => ({
-        total: d3.sum(a, e => e.tonnage),
-        squat: d3.sum(a.filter(f => f.exercise === "squat"), e => e.tonnage),
-        press: d3.sum(a.filter(f => f.exercise === "press"), e => e.tonnage),
-        bench: d3.sum(a.filter(f => f.exercise === "bench"), e => e.tonnage),
-        deadlift: d3.sum(
-          a.filter(f => f.exercise === "deadlift"),
-          e => e.tonnage
-        )
-      }))
-      .object(d);
-    let calTotalRoot = d3
-      .select(".cal-grid-total")
-      .style("height", 20 * 8 + "px")
-      .style("width", 20 * (maxWeek + 1) + "px");
-    let calSquatRoot = d3
-      .select(".cal-grid-squat")
-      .style("height", 20 * 8 + "px")
-      .style("width", 20 * (maxWeek + 1) + "px");
-    let calDeadliftRoot = d3
-      .select(".cal-grid-deadlift")
-      .style("height", 20 * 8 + "px")
-      .style("width", 20 * (maxWeek + 1) + "px");
-    let calPressRoot = d3
-      .select(".cal-grid-press")
-      .style("height", 20 * 8 + "px")
-      .style("width", 20 * (maxWeek + 1) + "px");
-    let calBenchRoot = d3
-      .select(".cal-grid-bench")
-      .style("height", 20 * 8 + "px")
-      .style("width", 20 * (maxWeek + 1) + "px");
-    const days = [null, "Mo", "Tu", "We", "Th", "Fr", "Sa", "Su"];
-    const appendDays = (root, d, i, j, f) => {
-      const val = ((d[i] || {})[j] || {})[f] || 0;
-      root
-        .append("div")
-        .style("background", c(val))
-        .style("width", "16px")
-        .style("padding-right", "2px")
-        .style("height", "18px")
-        .style("left", i * 20 + "px")
-        .style("top", j * 20 + "px")
-        .attr("title", val.toLocaleString())
-        .text(i !== 0 ? (j === 0 ? i : null) : days[j]);
-    };
-    for (let i = 0; i <= maxWeek; i++) {
-      for (let j = 0; j <= 7; j++) {
-        appendDays(calTotalRoot, calData, i, j, "total");
-        appendDays(calSquatRoot, calData, i, j, "squat");
-        appendDays(calDeadliftRoot, calData, i, j, "deadlift");
-        appendDays(calPressRoot, calData, i, j, "press");
-        appendDays(calBenchRoot, calData, i, j, "bench");
+  }
+
+  var svg = d3.select("svg#cal-legend");
+
+  svg
+    .append("g")
+    .attr("class", "legendThreshold")
+    .attr("transform", "translate(15,10)");
+
+  var legend = d3
+    .legendColor()
+    // assume this default label format string
+    // .labelFormat(".01f")
+    .labels(function({ i, genLength, generatedLabels }) {
+      let wip = generatedLabels[i];
+      // work with even 1000 values
+      wip = wip.split("000.0").join("k");
+      // or with even 500 values
+      wip = wip.split("500.0").join(".5k");
+      if (i === 0) {
+        return wip.replace("NaN to", "Less than");
+      } else if (i === genLength - 1) {
+        return `More than ${wip.replace(" to NaN", "")}`;
       }
-    }
+      return wip;
+    })
+    // .shapeWidth(10)
+    // .shapeHeight(10)
+    .scale(c);
 
-    var svg = d3.select("svg#cal-legend");
+  svg.select(".legendThreshold").call(legend);
 
-    svg
-      .append("g")
-      .attr("class", "legendThreshold")
-      .attr("transform", "translate(15,10)");
+  const maxPerExercise = d3
+    .nest()
+    .key(r => r.exercise)
+    .rollup(a => d3.max(a, e => e.weight))
+    .object(d);
 
-    var legend = d3
-      .legendColor()
-      // assume this default label format string
-      // .labelFormat(".01f")
-      .labels(function({ i, genLength, generatedLabels }) {
-        let wip = generatedLabels[i];
-        // work with even 1000 values
-        wip = wip.split("000.0").join("k");
-        // or with even 500 values
-        wip = wip.split("500.0").join(".5k");
-        if (i === 0) {
-          return wip.replace("NaN to", "Less than");
-        } else if (i === genLength - 1) {
-          return `More than ${wip.replace(" to NaN", "")}`;
-        }
-        return wip;
-      })
-      // .shapeWidth(10)
-      // .shapeHeight(10)
-      .scale(c);
-
-    svg.select(".legendThreshold").call(legend);
-
-    const maxPerExercise = d3
-      .nest()
-      .key(r => r.exercise)
-      .rollup(a => d3.max(a, e => e.weight))
-      .object(d);
-
-    // NOTE this only pays attention to the 3 exercises to track the total for
-    const maxPressTotal =
-      maxPerExercise.press + maxPerExercise.squat + maxPerExercise.deadlift;
-    const maxBenchTotal =
-      maxPerExercise.bench + maxPerExercise.squat + maxPerExercise.deadlift;
-    // hardcoded bodyweight
-    const BODY_WEIGHT = 198;
-    document.getElementById("wilks-p").innerHTML = wilksFormula(
-      BODY_WEIGHT,
-      maxPressTotal
-    ).toLocaleString("en-US", { maximumFractionDigits: 0 });
-    document.getElementById("wilks-b").innerHTML = wilksFormula(
-      BODY_WEIGHT,
-      maxBenchTotal
-    ).toLocaleString("en-US", { maximumFractionDigits: 0 });
-    const redraw = () => {
-      // magic constants in portrait and landscape respectively are
-      // 4 1 2 and 6 8 4
-      const windowWidth = window.innerWidth;
-      const www = Math.floor((windowWidth - 20) / 4);
-      const hhh = Math.floor(www / 2.1);
-      const ww = windowWidth - 10;
-      const hh = Math.floor(ww / 2.85);
-      const IS_NARROW = ww < 684;
-      const w = IS_NARROW ? ww : www;
-      const h = IS_NARROW ? hh : hhh;
-      renderChart("squat", "weight", nested, dates, w, h);
-      renderChart("deadlift", "weight", nested, dates, w, h);
-      renderChart("press", "weight", nested, dates, w, h);
-      renderChart("bench", "weight", nested, dates, w, h);
-      renderChart("squat", "reps", nested, dates, w, h);
-      renderChart("deadlift", "reps", nested, dates, w, h);
-      renderChart("press", "reps", nested, dates, w, h);
-      renderChart("bench", "reps", nested, dates, w, h);
-      renderChart("squat", "tonnage", nested, dates, w, h);
-      renderChart("deadlift", "tonnage", nested, dates, w, h);
-      renderChart("press", "tonnage", nested, dates, w, h);
-      renderChart("bench", "tonnage", nested, dates, w, h);
-    };
+  // NOTE this only pays attention to the 3 exercises to track the total for
+  const maxPressTotal =
+    maxPerExercise.press + maxPerExercise.squat + maxPerExercise.deadlift;
+  const maxBenchTotal =
+    maxPerExercise.bench + maxPerExercise.squat + maxPerExercise.deadlift;
+  // hardcoded bodyweight
+  const BODY_WEIGHT = 198;
+  document.getElementById("wilks-p").innerHTML = wilksFormula(
+    BODY_WEIGHT,
+    maxPressTotal
+  ).toLocaleString(
+    "en-US",
+    { maximumFractionDigits: 0 }
+  );
+  document.getElementById("wilks-b").innerHTML = wilksFormula(
+    BODY_WEIGHT,
+    maxBenchTotal
+  ).toLocaleString(
+    "en-US",
+    { maximumFractionDigits: 0 }
+  );
+  const redraw = () => {
+    // magic constants in portrait and landscape respectively are
+    // 4 1 2 and 6 8 4
+    const windowWidth = window.innerWidth;
+    const www = Math.floor((windowWidth - 20) / 4);
+    const hhh = Math.floor(www / 2.1);
+    const ww = windowWidth - 10;
+    const hh = Math.floor(ww / 2.85);
+    const IS_NARROW = ww < 684;
+    const w = IS_NARROW ? ww : www;
+    const h = IS_NARROW ? hh : hhh;
+    renderChart("squat", "weight", nested, dates, w, h);
+    renderChart("deadlift", "weight", nested, dates, w, h);
+    renderChart("press", "weight", nested, dates, w, h);
+    renderChart("bench", "weight", nested, dates, w, h);
+    renderChart("squat", "reps", nested, dates, w, h);
+    renderChart("deadlift", "reps", nested, dates, w, h);
+    renderChart("press", "reps", nested, dates, w, h);
+    renderChart("bench", "reps", nested, dates, w, h);
+    renderChart("squat", "tonnage", nested, dates, w, h);
+    renderChart("deadlift", "tonnage", nested, dates, w, h);
+    renderChart("press", "tonnage", nested, dates, w, h);
+    renderChart("bench", "tonnage", nested, dates, w, h);
+  };
+  redraw();
+  window.addEventListener("optimizedResize", function() {
     redraw();
-    window.addEventListener("optimizedResize", function() {
-      redraw();
-    });
   });
+});
 </script>
