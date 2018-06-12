@@ -352,8 +352,8 @@ d3.csv("2018.csv", r => {
   const maxWeek = d3.max(d.map(r => dateFns.getISOWeek(r.date)));
   const c = d3
     .scaleThreshold()
-    .domain([1000, 5000, 7500, 10000])
-    .range(d3.schemeBuPu[5]);
+    .domain([50, 1000, 5000, 7500, 10000])
+    .range(d3.schemeBuPu[6]);
   const calData = d3
     .nest()
     .key(r => dateFns.getISOWeek(r.date))
@@ -423,12 +423,14 @@ d3.csv("2018.csv", r => {
     // .labelFormat(".01f")
     .labels(function({ i, genLength, generatedLabels }) {
       let wip = generatedLabels[i];
+      // work with even 100 values
+      wip = wip.split("50.0").join("50");
       // work with even 1000 values
       wip = wip.split("000.0").join("k");
       // or with even 500 values
       wip = wip.split("500.0").join(".5k");
       if (i === 0) {
-        return wip.replace("NaN to", "Less than");
+        return wip.replace("NaN to", "Under");
       } else if (i === genLength - 1) {
         return `More than ${wip.replace(" to NaN", "")}`;
       }
