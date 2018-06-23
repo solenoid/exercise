@@ -169,7 +169,7 @@ const wilksFormula = (bodyweight, lifted) => {
 };
 
 // see https://bl.ocks.org/mbostock/3883245
-const renderChart = (exercise, dim, data, dates, w, h) => {
+const renderChart = (exercise, dim, data, dates, w, h, zeroed) => {
   var svg = d3.select(document.getElementById(`${exercise}-${dim}`));
   svg.selectAll("*").remove();
   var margin = { top: 10, right: 45, bottom: 30, left: 15 },
@@ -199,7 +199,7 @@ const renderChart = (exercise, dim, data, dates, w, h) => {
     .range([plate55lbs, plate45lbs, plate25lbs]);
   x.domain(dates);
   y.domain([
-    d3.min(data[exercise], d => d[dim]),
+    zeroed ? 0 : d3.min(data[exercise], d => d[dim]),
     d3.max(data[exercise], d => d[dim])
   ]);
   g.append("g")
@@ -323,18 +323,25 @@ d3.csv("2018.csv", r => {
   };
 }).then(d => {
   let u = new URL(document.location);
+  let uc = new URL(document.location);
+  let uz = new URL(document.location);
+  let ucz = new URL(document.location);
   let showAllOnly = null == u.searchParams.get("comp");
-  if (showAllOnly) {
-    u.search = "?comp";
-  } else {
-    u.search = "";
+  let zeroed = null != u.searchParams.get("zero");
+  u.search = "";
+  uc.search = "?comp";
+  uz.search = "?zero";
+  ucz.search = "?comp&zero";
+  if (!showAllOnly) {
     d = d.filter(r => r.competition);
   }
   document.getElementById("variants").innerHTML = `<p>Showing ${
     showAllOnly ? "all variants" : "comp only"
-  }</p><p><a href="${u.toString()}">See ${
-    showAllOnly ? "comp only" : "all variants"
-  } instead</a></p>`;
+  } ${zeroed ? "zeroed" : ""}</p>
+  <p><a href="${u.toString()}">See all variants</a></p>
+  <p><a href="${uc.toString()}">See comp only</a></p>
+  <p><a href="${uz.toString()}">See all variants zeroed</a></p>
+  <p><a href="${ucz.toString()}">See comp only zeroed</a></p>`;
   const pounds = d3.sum(d, r => r.tonnage);
   document.getElementById("tons").innerHTML = (pounds / 2000).toLocaleString(
     "en-US",
@@ -458,17 +465,11 @@ d3.csv("2018.csv", r => {
   document.getElementById("wilks-p").innerHTML = wilksFormula(
     BODY_WEIGHT,
     maxPressTotal
-  ).toLocaleString(
-    "en-US",
-    { maximumFractionDigits: 0 }
-  );
+  ).toLocaleString("en-US", { maximumFractionDigits: 0 });
   document.getElementById("wilks-b").innerHTML = wilksFormula(
     BODY_WEIGHT,
     maxBenchTotal
-  ).toLocaleString(
-    "en-US",
-    { maximumFractionDigits: 0 }
-  );
+  ).toLocaleString("en-US", { maximumFractionDigits: 0 });
   const redraw = () => {
     // magic constants in portrait and landscape respectively are
     // 4 1 2 and 6 8 4
@@ -480,18 +481,18 @@ d3.csv("2018.csv", r => {
     const IS_NARROW = ww < 684;
     const w = IS_NARROW ? ww : www;
     const h = IS_NARROW ? hh : hhh;
-    renderChart("squat", "weight", nested, dates, w, h);
-    renderChart("deadlift", "weight", nested, dates, w, h);
-    renderChart("press", "weight", nested, dates, w, h);
-    renderChart("bench", "weight", nested, dates, w, h);
-    renderChart("squat", "reps", nested, dates, w, h);
-    renderChart("deadlift", "reps", nested, dates, w, h);
-    renderChart("press", "reps", nested, dates, w, h);
-    renderChart("bench", "reps", nested, dates, w, h);
-    renderChart("squat", "tonnage", nested, dates, w, h);
-    renderChart("deadlift", "tonnage", nested, dates, w, h);
-    renderChart("press", "tonnage", nested, dates, w, h);
-    renderChart("bench", "tonnage", nested, dates, w, h);
+    renderChart("squat", "weight", nested, dates, w, h, zeroed);
+    renderChart("deadlift", "weight", nested, dates, w, h, zeroed);
+    renderChart("press", "weight", nested, dates, w, h, zeroed);
+    renderChart("bench", "weight", nested, dates, w, h, zeroed);
+    renderChart("squat", "reps", nested, dates, w, h, zeroed);
+    renderChart("deadlift", "reps", nested, dates, w, h, zeroed);
+    renderChart("press", "reps", nested, dates, w, h, zeroed);
+    renderChart("bench", "reps", nested, dates, w, h, zeroed);
+    renderChart("squat", "tonnage", nested, dates, w, h, zeroed);
+    renderChart("deadlift", "tonnage", nested, dates, w, h, zeroed);
+    renderChart("press", "tonnage", nested, dates, w, h, zeroed);
+    renderChart("bench", "tonnage", nested, dates, w, h, zeroed);
   };
   redraw();
   window.addEventListener("optimizedResize", function() {
