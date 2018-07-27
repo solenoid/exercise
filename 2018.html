@@ -23,11 +23,11 @@ body {
 }
 @media (min-width: 684px) {
   body {
-    grid-template-columns: repeat(4, 1fr);
+    grid-template-columns: repeat(3, 1fr);
     grid-template-areas:
-      "header header header header"
-      "squat deadlift press bench"
-      "cal cal cal cal";
+      "header header header"
+      "squat deadlift press"
+      "cal cal cal";
   }
 }
 h2 {
@@ -56,6 +56,10 @@ body > div {
 .bench {
   grid-area: bench;
 }
+.bench, #bench-cal {
+  display: none;
+}
+
 .cal {
   grid-area: cal;
   background: #ddd;
@@ -133,8 +137,10 @@ svg text {
   <div class="cal-grid cal-grid-deadlift"></div>
   <h4>Press tonnage</h4>
   <div class="cal-grid cal-grid-press"></div>
-  <h4>Bench tonnage</h4>
-  <div class="cal-grid cal-grid-bench"></div>
+  <div id="bench-cal">
+    <h4>Bench tonnage</h4>
+    <div class="cal-grid cal-grid-bench"></div>
+  </div>
 </div>
 <span id="variants"></span>
 <script src="d3.js"></script>
@@ -474,7 +480,7 @@ d3.csv("2018.csv", r => {
     // magic constants in portrait and landscape respectively are
     // 4 1 2 and 6 8 4
     const windowWidth = window.innerWidth;
-    const www = Math.floor((windowWidth - 20) / 4);
+    const www = Math.floor((windowWidth - 20) / 3);
     const hhh = Math.floor(www / 2.1);
     const ww = windowWidth - 10;
     const hh = Math.floor(ww / 2.85);
