@@ -126,7 +126,9 @@ const renderChart = (exercise, dim, data, dates, w, h, zeroed) => {
       // }
       return `M${xp - r},${yp} a1 1 0 1 1 ${di} 0 M${xp -
         r},${yp} a1 1 0 0 0 ${di} 0`;
-    });
+    })
+    .append("title")
+    .text(d => `${d[dim].toLocaleString()}\n${d.date}`);
 };
 
 // https://developer.mozilla.org/en-US/docs/Web/Events/resize#requestAnimationFrame_customEvent
