@@ -113,17 +113,17 @@ const renderChart = (exercise, dim, data, dates, w, h, zeroed) => {
       const di = 9;
       const r = di / 2;
       const h = di / 3;
-      // TODO consider if custom d3.symbol for the high / low / trap makes sense
-      if (d.variant === "high") {
-        return `M${xp - r},${yp} a1 0.8 0 1 1 ${di} 0`;
-      }
-      if (d.variant === "low") {
-        return `M${xp - r},${yp} a1 0.8 0 0 0 ${di} 0`;
-      }
-      if (d.variant === "trap") {
-        return `M${xp -
-          r},${yp} l${h},-${h}l${h},0l${h},${h}l-${h},${h}l-${h},0l-${h},-${h}`;
-      }
+      // // TODO consider if custom d3.symbol for the high / low / trap makes sense
+      // if (d.variant === "high") {
+      //   return `M${xp - r},${yp} a1 0.8 0 1 1 ${di} 0`;
+      // }
+      // if (d.variant === "low") {
+      //   return `M${xp - r},${yp} a1 0.8 0 0 0 ${di} 0`;
+      // }
+      // if (d.variant === "trap") {
+      //   return `M${xp -
+      //     r},${yp} l${h},-${h}l${h},0l${h},${h}l-${h},${h}l-${h},0l-${h},-${h}`;
+      // }
       return `M${xp - r},${yp} a1 1 0 1 1 ${di} 0 M${xp -
         r},${yp} a1 1 0 0 0 ${di} 0`;
     });
