@@ -1,3 +1,7 @@
+// curl -o d3.js https://d3js.org/d3.v5.js
+// curl -o d3-legend.js https://cdnjs.cloudflare.com/ajax/libs/d3-legend/2.25.6/d3-legend.js
+// curl -o date_fns.js https://cdnjs.cloudflare.com/ajax/libs/date-fns/1.29.0/date_fns.js
+
 // console.log(`d3 v${d3.version}`);
 
 // see https://en.wikipedia.org/wiki/Wilks_Coefficient#Equation
