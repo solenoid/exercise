@@ -271,7 +271,7 @@ d3.csv("2018.csv", r => {
       .style("height", "18px")
       .style("left", i * 20 + "px")
       .style("top", j * 20 + "px")
-      .attr("title", val.toLocaleString("en-US", { maximumFractionDigits: 1 }))
+      .attr("title", val.toLocaleString("en-US", { maximumFractionDigits: 2 }))
       .text(i !== 0 ? (j === 0 ? i : null) : days[j]);
   };
   for (let i = 0; i <= maxWeek; i++) {
