@@ -81,7 +81,7 @@ const renderChart = (exercise, dim, data, dates, w, h, zeroed) => {
       dim === "weight"
         ? "max weight (kgs)"
         : dim === "tonnage"
-          ? "tonnage (kgs)"
+          ? "tons (metric)"
           : dim === "reps"
             ? "reps (total)"
             : dim
@@ -133,7 +133,7 @@ const renderChart = (exercise, dim, data, dates, w, h, zeroed) => {
     .append("title")
     .text(
       d =>
-        `${d[dim].toLocaleString("en-US", { maximumFractionDigits: 0 })}\n${
+        `${d[dim].toLocaleString("en-US", { maximumFractionDigits: 1 })}\n${
           d.date
         }`
     );
@@ -184,8 +184,8 @@ d3.csv("2018.csv", r => {
       r.exercise === "squat low" ||
       r.exercise === "press overhead" ||
       r.exercise === "bench",
-    // assume all weight is input in lbs for now, but shown in kgs
-    tonnage: d3.sum(allSets, d => d.tonnage) / lbs_in_kg,
+    // assume all weight is input in lbs for now, but shown in kgs or tons
+    tonnage: d3.sum(allSets, d => d.tonnage) / lbs_in_kg / 1000,
     weight: d3.max(allSets.map(d => d.weight)) / lbs_in_kg,
     reps: d3.sum(allSets.map(d => d.reps))
   };
@@ -210,11 +210,10 @@ d3.csv("2018.csv", r => {
   <p><a href="${uc.toString()}">See comp only</a></p>
   <p><a href="${uz.toString()}">See all variants zeroed</a></p>
   <p><a href="${ucz.toString()}">See comp only zeroed</a></p>`;
-  const kgs = d3.sum(d, r => r.tonnage);
-  document.getElementById("tons").innerHTML = (kgs / 1000).toLocaleString(
-    "en-US",
-    { maximumFractionDigits: 0 }
-  );
+  const tons = d3.sum(d, r => r.tonnage);
+  document.getElementById("tons").innerHTML = tons.toLocaleString("en-US", {
+    maximumFractionDigits: 0
+  });
   const nested = d3
     .nest()
     .key(r => r.exercise)
@@ -227,7 +226,7 @@ d3.csv("2018.csv", r => {
   const maxWeek = d3.max(d.map(r => dateFns.getISOWeek(r.date)));
   const c = d3
     .scaleThreshold()
-    .domain([50, 1000, 2000, 3000, 4000])
+    .domain([0.1, 1, 2, 3, 4])
     .range(d3.schemeBuPu[6]);
   const calData = d3
     .nest()
@@ -272,7 +271,7 @@ d3.csv("2018.csv", r => {
       .style("height", "18px")
       .style("left", i * 20 + "px")
       .style("top", j * 20 + "px")
-      .attr("title", val.toLocaleString("en-US", { maximumFractionDigits: 0 }))
+      .attr("title", val.toLocaleString("en-US", { maximumFractionDigits: 1 }))
       .text(i !== 0 ? (j === 0 ? i : null) : days[j]);
   };
   for (let i = 0; i <= maxWeek; i++) {
@@ -295,22 +294,23 @@ d3.csv("2018.csv", r => {
   var legend = d3
     .legendColor()
     // assume this default label format string
-    // .labelFormat(".01f")
-    .labels(function({ i, genLength, generatedLabels }) {
-      let wip = generatedLabels[i];
-      // work with even 100 values
-      wip = wip.split("50.0").join("50");
-      // work with even 1000 values
-      wip = wip.split("000.0").join("k");
-      // or with even 500 values
-      wip = wip.split("500.0").join(".5k");
-      if (i === 0) {
-        return wip.replace("NaN to", "Under");
-      } else if (i === genLength - 1) {
-        return `More than ${wip.replace(" to NaN", "")}`;
-      }
-      return wip;
-    })
+    .labelFormat(".1r")
+    .labels(d3.legendHelpers.thresholdLabels)
+    // .labels(function({ i, genLength, generatedLabels }) {
+    //   let wip = generatedLabels[i];
+    //   // work with even 100 values
+    //   wip = wip.split("50.0").join("50");
+    //   // work with even 1000 values
+    //   wip = wip.split("000.0").join("k");
+    //   // or with even 500 values
+    //   wip = wip.split("500.0").join(".5k");
+    //   if (i === 0) {
+    //     return wip.replace("NaN to", "Under");
+    //   } else if (i === genLength - 1) {
+    //     return `More than ${wip.replace(" to NaN", "")}`;
+    //   }
+    //   return wip;
+    // })
     // .shapeWidth(10)
     // .shapeHeight(10)
     .scale(c);
