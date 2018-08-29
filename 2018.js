@@ -14,10 +14,9 @@ const e = 7.01863e-6;
 const f = -1.291e-8;
 const lbs_in_kg = 2.20462262185;
 // const lbs_in_kg = 2.2;
-// Assume pounds for both bodyweight and lifted amounts
-const wilksFormula = (bodyweight, lifted) => {
-  const lifted_kg = lifted / lbs_in_kg;
-  const x = bodyweight / lbs_in_kg;
+// Assume kilograms for both bodyweight and lifted amounts
+const wilksFormula = (bodyweight, lifted_kg) => {
+  const x = bodyweight;
   const denominator =
     a +
     b * x +
@@ -80,9 +79,9 @@ const renderChart = (exercise, dim, data, dates, w, h, zeroed) => {
     .attr("text-anchor", "start")
     .text(
       dim === "weight"
-        ? "max weight (lbs)"
+        ? "max weight (kgs)"
         : dim === "tonnage"
-          ? "tonnage (lbs)"
+          ? "tonnage (kgs)"
           : dim === "reps"
             ? "reps (total)"
             : dim
@@ -132,7 +131,12 @@ const renderChart = (exercise, dim, data, dates, w, h, zeroed) => {
         r},${yp} a1 1 0 0 0 ${di} 0`;
     })
     .append("title")
-    .text(d => `${d[dim].toLocaleString()}\n${d.date}`);
+    .text(
+      d =>
+        `${d[dim].toLocaleString("en-US", { maximumFractionDigits: 0 })}\n${
+          d.date
+        }`
+    );
 };
 
 // https://developer.mozilla.org/en-US/docs/Web/Events/resize#requestAnimationFrame_customEvent
@@ -180,8 +184,9 @@ d3.csv("2018.csv", r => {
       r.exercise === "squat low" ||
       r.exercise === "press overhead" ||
       r.exercise === "bench",
-    tonnage: d3.sum(allSets, d => d.tonnage),
-    weight: d3.max(allSets.map(d => d.weight)),
+    // assume all weight is input in lbs for now, but shown in kgs
+    tonnage: d3.sum(allSets, d => d.tonnage) / lbs_in_kg,
+    weight: d3.max(allSets.map(d => d.weight)) / lbs_in_kg,
     reps: d3.sum(allSets.map(d => d.reps))
   };
 }).then(d => {
@@ -205,8 +210,8 @@ d3.csv("2018.csv", r => {
   <p><a href="${uc.toString()}">See comp only</a></p>
   <p><a href="${uz.toString()}">See all variants zeroed</a></p>
   <p><a href="${ucz.toString()}">See comp only zeroed</a></p>`;
-  const pounds = d3.sum(d, r => r.tonnage);
-  document.getElementById("tons").innerHTML = (pounds / 2000).toLocaleString(
+  const kgs = d3.sum(d, r => r.tonnage);
+  document.getElementById("tons").innerHTML = (kgs / 1000).toLocaleString(
     "en-US",
     { maximumFractionDigits: 0 }
   );
@@ -222,7 +227,7 @@ d3.csv("2018.csv", r => {
   const maxWeek = d3.max(d.map(r => dateFns.getISOWeek(r.date)));
   const c = d3
     .scaleThreshold()
-    .domain([50, 1000, 5000, 7500, 10000])
+    .domain([50, 1000, 2000, 3000, 4000])
     .range(d3.schemeBuPu[6]);
   const calData = d3
     .nest()
@@ -267,7 +272,7 @@ d3.csv("2018.csv", r => {
       .style("height", "18px")
       .style("left", i * 20 + "px")
       .style("top", j * 20 + "px")
-      .attr("title", val.toLocaleString())
+      .attr("title", val.toLocaleString("en-US", { maximumFractionDigits: 0 }))
       .text(i !== 0 ? (j === 0 ? i : null) : days[j]);
   };
   for (let i = 0; i <= maxWeek; i++) {
@@ -324,7 +329,7 @@ d3.csv("2018.csv", r => {
   const maxBenchTotal =
     maxPerExercise.bench + maxPerExercise.squat + maxPerExercise.deadlift;
   // hardcoded bodyweight
-  const BODY_WEIGHT = 198;
+  const BODY_WEIGHT = 93;
   document.getElementById("wilks-p").innerHTML = wilksFormula(
     BODY_WEIGHT,
     maxPressTotal
