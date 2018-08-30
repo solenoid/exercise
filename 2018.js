@@ -293,24 +293,8 @@ d3.csv("2018.csv", r => {
 
   var legend = d3
     .legendColor()
-    // assume this default label format string
     .labelFormat(".1r")
     .labels(d3.legendHelpers.thresholdLabels)
-    // .labels(function({ i, genLength, generatedLabels }) {
-    //   let wip = generatedLabels[i];
-    //   // work with even 100 values
-    //   wip = wip.split("50.0").join("50");
-    //   // work with even 1000 values
-    //   wip = wip.split("000.0").join("k");
-    //   // or with even 500 values
-    //   wip = wip.split("500.0").join(".5k");
-    //   if (i === 0) {
-    //     return wip.replace("NaN to", "Under");
-    //   } else if (i === genLength - 1) {
-    //     return `More than ${wip.replace(" to NaN", "")}`;
-    //   }
-    //   return wip;
-    // })
     // .shapeWidth(10)
     // .shapeHeight(10)
     .scale(c);
@@ -328,7 +312,7 @@ d3.csv("2018.csv", r => {
     maxPerExercise.press + maxPerExercise.squat + maxPerExercise.deadlift;
   const maxBenchTotal =
     maxPerExercise.bench + maxPerExercise.squat + maxPerExercise.deadlift;
-  // hardcoded bodyweight
+  // hardcoded bodyweight in kilograms
   const BODY_WEIGHT = 93;
   document.getElementById("wilks-p").innerHTML = wilksFormula(
     BODY_WEIGHT,
