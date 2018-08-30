@@ -159,20 +159,25 @@ const renderChart = (exercise, dim, data, dates, w, h, zeroed) => {
   throttle("resize", "optimizedResize");
 })();
 
+const ENDS_IN_LBS = /lbs$/i;
+const ENDS_IN_KGS = /kgs$/i;
+// assume unlabeled weights are in kgs
+const kgNumber = s =>
+  s.match(ENDS_IN_LBS)
+    ? Number(s.replace(ENDS_IN_LBS, "")) / lbs_in_kg
+    : Number(s.replace(ENDS_IN_KGS, ""));
+
 // assume the csv is in the correct order so no sorting needed
 // assume there are only ever 10 sets to pay attention to
 const ALL_SETS = d3.range(1, 11).map(s => `set${s}`);
 d3.csv("2018.csv", r => {
-  const recordedMaxWeight = Number(r["max weight"].replace("lbs", ""));
+  const recordedMaxWeight = kgNumber(r["max weight"]);
   let allSets = ALL_SETS.map(s => {
     const raw = r[s] || "";
     if (raw.length === 0) return null;
     const parts = raw.split("x");
     let info = {};
-    info.weight =
-      parts.length === 1
-        ? recordedMaxWeight
-        : Number(parts[0].replace("lbs", ""));
+    info.weight = parts.length === 1 ? recordedMaxWeight : kgNumber(parts[0]);
     info.reps = d3.sum(parts[parts.length - 1].split("|").map(n => Number(n)));
     info.tonnage = info.weight * info.reps;
     return info;
@@ -187,9 +192,9 @@ d3.csv("2018.csv", r => {
       r.exercise === "squat low" ||
       r.exercise === "press overhead" ||
       r.exercise === "bench",
-    // assume all weight is input in lbs for now, but shown in kgs or tons
-    tonnage: d3.sum(allSets, d => d.tonnage) / lbs_in_kg / 1000,
-    weight: d3.max(allSets.map(d => d.weight)) / lbs_in_kg,
+    // assume all weight has been converted to kgs regardless of data entry
+    tonnage: d3.sum(allSets, d => d.tonnage) / 1000,
+    weight: d3.max(allSets.map(d => d.weight)),
     reps: d3.sum(allSets.map(d => d.reps))
   };
 }).then(d => {
