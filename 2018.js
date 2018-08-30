@@ -163,13 +163,16 @@ const renderChart = (exercise, dim, data, dates, w, h, zeroed) => {
 // assume there are only ever 10 sets to pay attention to
 const ALL_SETS = d3.range(1, 11).map(s => `set${s}`);
 d3.csv("2018.csv", r => {
-  const recordedMaxWeight = Number(r["max weight"]);
+  const recordedMaxWeight = Number(r["max weight"].replace("lbs", ""));
   let allSets = ALL_SETS.map(s => {
     const raw = r[s] || "";
     if (raw.length === 0) return null;
     const parts = raw.split("x");
     let info = {};
-    info.weight = parts.length === 1 ? recordedMaxWeight : Number(parts[0]);
+    info.weight =
+      parts.length === 1
+        ? recordedMaxWeight
+        : Number(parts[0].replace("lbs", ""));
     info.reps = d3.sum(parts[parts.length - 1].split("|").map(n => Number(n)));
     info.tonnage = info.weight * info.reps;
     return info;
