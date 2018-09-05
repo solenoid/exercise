@@ -248,37 +248,41 @@ d3.csv("2018.csv", r => {
       deadlift: d3.sum(a.filter(f => f.exercise === "deadlift"), e => e.tonnage)
     }))
     .object(d);
+
+  const calWH = 20;
+  const calWidth = calWH * (maxWeek + 1) + "px";
+  const calHeight = calWH * 8 + "px";
   let calTotalRoot = d3
     .select(".cal-grid-total")
-    .style("height", 20 * 8 + "px")
-    .style("width", 20 * (maxWeek + 1) + "px");
+    .style("width", calWidth)
+    .style("height", calHeight);
   let calSquatRoot = d3
     .select(".cal-grid-squat")
-    .style("height", 20 * 8 + "px")
-    .style("width", 20 * (maxWeek + 1) + "px");
+    .style("width", calWidth)
+    .style("height", calHeight);
   let calDeadliftRoot = d3
     .select(".cal-grid-deadlift")
-    .style("height", 20 * 8 + "px")
-    .style("width", 20 * (maxWeek + 1) + "px");
+    .style("width", calWidth)
+    .style("height", calHeight);
   let calPressRoot = d3
     .select(".cal-grid-press")
-    .style("height", 20 * 8 + "px")
-    .style("width", 20 * (maxWeek + 1) + "px");
+    .style("width", calWidth)
+    .style("height", calHeight);
   let calBenchRoot = d3
     .select(".cal-grid-bench")
-    .style("height", 20 * 8 + "px")
-    .style("width", 20 * (maxWeek + 1) + "px");
+    .style("width", calWidth)
+    .style("height", calHeight);
   const days = [null, "Mo", "Tu", "We", "Th", "Fr", "Sa", "Su"];
   const appendDays = (root, d, i, j, f) => {
     const val = ((d[i] || {})[j] || {})[f] || 0;
     root
       .append("div")
       .style("background", c(val))
-      .style("width", "16px")
+      .style("width", calWH - 4 + "px")
       .style("padding-right", "2px")
-      .style("height", "18px")
-      .style("left", i * 20 + "px")
-      .style("top", j * 20 + "px")
+      .style("height", calWH - 2 + "px")
+      .style("left", i * calWH + "px")
+      .style("top", j * calWH + "px")
       .attr("title", val.toLocaleString("en-US", { maximumFractionDigits: 2 }))
       .text(i !== 0 ? (j === 0 ? i : null) : days[j]);
   };
@@ -295,6 +299,8 @@ d3.csv("2018.csv", r => {
   let svg = d3.select("svg#cal-legend");
 
   svg
+    .attr("width", 160)
+    .attr("height", calHeight)
     .append("g")
     .attr("class", "legendThreshold")
     .attr("transform", "translate(15,10)");
@@ -303,8 +309,8 @@ d3.csv("2018.csv", r => {
     .legendColor()
     .labelFormat(".1r")
     .labels(d3.legendHelpers.thresholdLabels)
-    // .shapeWidth(10)
-    // .shapeHeight(10)
+    .shapeWidth(calWH - 2)
+    .shapeHeight(calWH - 2)
     .scale(c);
 
   svg.select(".legendThreshold").call(legend);
