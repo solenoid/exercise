@@ -168,6 +168,12 @@ const kgNumber = s =>
     ? Number(s.replace(ENDS_IN_LBS, "")) / lbs_in_kg
     : Number(s.replace(ENDS_IN_KGS, ""));
 
+const linkURL = search => {
+  let url = new URL(document.location);
+  url.search = search;
+  return url.toString();
+};
+
 // assume the csv is in the correct order so no sorting needed
 // assume there are only ever 10 sets to pay attention to
 const ALL_SETS = d3.range(1, 11).map(s => `set${s}`);
@@ -200,25 +206,18 @@ d3.csv("2018.csv", r => {
   };
 }).then(d => {
   let u = new URL(document.location);
-  let uc = new URL(document.location);
-  let uz = new URL(document.location);
-  let ucz = new URL(document.location);
   let showAllOnly = null == u.searchParams.get("comp");
   let zeroed = null != u.searchParams.get("zero");
-  u.search = "";
-  uc.search = "?comp";
-  uz.search = "?zero";
-  ucz.search = "?comp&zero";
   if (!showAllOnly) {
     d = d.filter(r => r.competition);
   }
   document.getElementById("variants").innerHTML = `<p>Showing ${
     showAllOnly ? "all variants" : "comp only"
   } ${zeroed ? "zeroed" : ""}</p>
-  <p><a href="${u.toString()}">See all variants</a></p>
-  <p><a href="${uc.toString()}">See comp only</a></p>
-  <p><a href="${uz.toString()}">See all variants zeroed</a></p>
-  <p><a href="${ucz.toString()}">See comp only zeroed</a></p>`;
+  <p><a href='${linkURL("")}'>See all variants</a></p>
+  <p><a href='${linkURL("?comp")}'>See comp only</a></p>
+  <p><a href='${linkURL("?zero")}'>See all variants zeroed</a></p>
+  <p><a href='${linkURL("?comp&zero")}'>See comp only zeroed</a></p>`;
   const tons = d3.sum(d, r => r.tonnage);
   document.getElementById("tons").innerHTML = tons.toLocaleString("en-US", {
     maximumFractionDigits: 0
