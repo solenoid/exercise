@@ -13,9 +13,9 @@ const d = -0.00113732;
 const e = 7.01863e-6;
 const f = -1.291e-8;
 const lbs_in_kg = 2.20462262185;
-// const lbs_in_kg = 2.2;
+
 // Assume kilograms for both bodyweight and lifted amounts
-const wilksFormula = (bodyweight, lifted_kg) => {
+const wilksFormula = (bodyweight, lifted) => {
   const x = bodyweight;
   const denominator =
     a +
@@ -25,27 +25,27 @@ const wilksFormula = (bodyweight, lifted_kg) => {
     e * Math.pow(x, 4) +
     f * Math.pow(x, 5);
   const wilks_coefficient = 500 / denominator;
-  return wilks_coefficient * lifted_kg;
+  return wilks_coefficient * lifted;
 };
 
 // see https://bl.ocks.org/mbostock/3883245
 const renderChart = (exercise, dim, data, dates, w, h, zeroed) => {
-  var svg = d3.select(document.getElementById(`${exercise}-${dim}`));
+  let svg = d3.select(document.getElementById(`${exercise}-${dim}`));
   svg.selectAll("*").remove();
-  var margin = { top: 10, right: 45, bottom: 30, left: 15 },
-    width = w - margin.left - margin.right,
-    height = h - margin.top - margin.bottom,
-    g = svg
-      .attr("width", w)
-      .attr("height", h)
-      .append("g")
-      .attr("transform", `translate(${margin.left},${margin.top})`);
+  const margin = { top: 10, right: 45, bottom: 30, left: 15 };
+  const width = w - margin.left - margin.right;
+  const height = h - margin.top - margin.bottom;
+  let g = svg
+    .attr("width", w)
+    .attr("height", h)
+    .append("g")
+    .attr("transform", `translate(${margin.left},${margin.top})`);
 
-  var x = d3.scaleTime().rangeRound([0, width]);
+  let x = d3.scaleTime().rangeRound([0, width]);
 
-  var y = d3.scaleLinear().rangeRound([height, 0]);
+  let y = d3.scaleLinear().rangeRound([height, 0]);
 
-  var line = d3
+  let line = d3
     .line()
     .x(d => x(d.date))
     .y(d => y(d[dim]));
@@ -127,6 +127,7 @@ const renderChart = (exercise, dim, data, dates, w, h, zeroed) => {
       //   return `M${xp -
       //     r},${yp} l${h},-${h}l${h},0l${h},${h}l-${h},${h}l-${h},0l-${h},-${h}`;
       // }
+      // overly fancy way to draw a circle
       return `M${xp - r},${yp} a1 1 0 1 1 ${di} 0 M${xp -
         r},${yp} a1 1 0 0 0 ${di} 0`;
     })
@@ -292,14 +293,14 @@ d3.csv("2018.csv", r => {
     }
   }
 
-  var svg = d3.select("svg#cal-legend");
+  let svg = d3.select("svg#cal-legend");
 
   svg
     .append("g")
     .attr("class", "legendThreshold")
     .attr("transform", "translate(15,10)");
 
-  var legend = d3
+  let legend = d3
     .legendColor()
     .labelFormat(".1r")
     .labels(d3.legendHelpers.thresholdLabels)
