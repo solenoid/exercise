@@ -12,7 +12,7 @@ const c = -0.002388645;
 const d = -0.00113732;
 const e = 7.01863e-6;
 const f = -1.291e-8;
-const lbs_in_kg = 2.20462262185;
+const lbs_in_kgs = 2.20462262185;
 
 // Assume kilograms for both bodyweight and lifted amounts
 const wilksFormula = (bodyweight, lifted) => {
@@ -165,7 +165,7 @@ const ENDS_IN_KGS = /kgs$/i;
 // assume unlabeled weights are in kgs
 const kgNumber = s =>
   s.match(ENDS_IN_LBS)
-    ? Number(s.replace(ENDS_IN_LBS, "")) / lbs_in_kg
+    ? Number(s.replace(ENDS_IN_LBS, "")) / lbs_in_kgs
     : Number(s.replace(ENDS_IN_KGS, ""));
 
 const linkURL = search => {
