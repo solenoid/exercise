@@ -2,8 +2,6 @@
 // curl -o d3-legend.js https://cdnjs.cloudflare.com/ajax/libs/d3-legend/2.25.6/d3-legend.js
 // curl -o date_fns.js https://cdnjs.cloudflare.com/ajax/libs/date-fns/1.29.0/date_fns.js
 
-// console.log(`d3 v${d3.version}`);
-
 // see https://en.wikipedia.org/wiki/Wilks_Coefficient#Equation
 // Values for men are:
 const a = -216.0475144;
@@ -96,41 +94,14 @@ const renderChart = (exercise, dim, data, dates, w, h, zeroed) => {
     .attr("stroke-width", 1.5)
     .attr("d", line);
   // see http://alignedleft.com/tutorials/d3/making-a-scatterplot
-  // g.selectAll("circle")
-  //   // .data(data[exercise])
-  //   .enter()
-  //   .append("circle")
-  //   // .attr("fill", color(exercise))
-  //   .attr("cx", d => x(d.date))
-  //   .attr("cy", d => y(d[dim]))
-  //   .attr("r", 5);
-  g.selectAll("path.mark")
+  g.selectAll("circle")
     .data(data[exercise])
     .enter()
-    .append("path")
-    .attr("class", "mark")
+    .append("circle")
     .attr("fill", color(exercise))
-    .attr("d", d => {
-      const xp = x(d.date);
-      const yp = y(d[dim]);
-      const di = 9;
-      const r = di / 2;
-      const h = di / 3;
-      // // TODO consider if custom d3.symbol for the high / low / trap makes sense
-      // if (d.variant === "high") {
-      //   return `M${xp - r},${yp} a1 0.8 0 1 1 ${di} 0`;
-      // }
-      // if (d.variant === "low") {
-      //   return `M${xp - r},${yp} a1 0.8 0 0 0 ${di} 0`;
-      // }
-      // if (d.variant === "trap") {
-      //   return `M${xp -
-      //     r},${yp} l${h},-${h}l${h},0l${h},${h}l-${h},${h}l-${h},0l-${h},-${h}`;
-      // }
-      // overly fancy way to draw a circle
-      return `M${xp - r},${yp} a1 1 0 1 1 ${di} 0 M${xp -
-        r},${yp} a1 1 0 0 0 ${di} 0`;
-    })
+    .attr("cx", d => x(d.date))
+    .attr("cy", d => y(d[dim]))
+    .attr("r", 3)
     .append("title")
     .text(
       d =>
