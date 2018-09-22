@@ -48,13 +48,13 @@ const renderChart = (exercise, dim, data, dates, w, h, zeroed) => {
     .x(d => x(d.date))
     .y(d => y(d[dim]));
 
-  const plate25lbs = "rgb(55, 106, 48)";
-  const plate55lbs = "rgb(151, 70, 59)";
-  const plate45lbs = "rgb(82, 89, 155)";
+  const plate10kgs = "rgb(55, 106, 48)";
+  const plate25kgs = "rgb(151, 70, 59)";
+  const plate20kgs = "rgb(82, 89, 155)";
   const color = d3
     .scaleOrdinal()
     .domain(["deadlift", "squat", "press"])
-    .range([plate55lbs, plate45lbs, plate25lbs]);
+    .range([plate25kgs, plate20kgs, plate10kgs]);
   x.domain(dates);
   y.domain([
     zeroed ? 0 : d3.min(data[exercise], d => d[dim]),
