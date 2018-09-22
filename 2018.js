@@ -311,13 +311,13 @@ d3.csv("2018.csv", r => {
     // magic constants in portrait and landscape respectively are
     // 4 1 2 and 6 8 4
     const windowWidth = window.innerWidth;
-    const www = Math.floor((windowWidth - 20) / 3);
-    const hhh = Math.floor(www / 2.1);
-    const ww = windowWidth - 10;
-    const hh = Math.floor(ww / 2.85);
-    const IS_NARROW = ww < 684;
-    const w = IS_NARROW ? ww : www;
-    const h = IS_NARROW ? hh : hhh;
+    const chartWidthWide = Math.floor((windowWidth - 20) / 3);
+    const chartHeightWide = Math.floor(chartWidthWide / 2.1);
+    const chartWidthNarrow = windowWidth - 10;
+    const chartHeightNarrow = Math.floor(chartWidthNarrow / 2.85);
+    const IS_NARROW = chartWidthNarrow < 684;
+    const w = IS_NARROW ? chartWidthNarrow : chartWidthWide;
+    const h = IS_NARROW ? chartHeightNarrow : chartHeightWide;
     renderChart("squat", "weight", nested, dates, w, h, zeroed);
     renderChart("deadlift", "weight", nested, dates, w, h, zeroed);
     renderChart("press", "weight", nested, dates, w, h, zeroed);
