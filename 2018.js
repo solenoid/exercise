@@ -16,12 +16,7 @@ const lbs_in_kgs = 2.20462262185;
 const wilksFormula = (bodyweight, lifted) => {
   const x = bodyweight;
   const denominator =
-    a +
-    b * x +
-    c * Math.pow(x, 2) +
-    d * Math.pow(x, 3) +
-    e * Math.pow(x, 4) +
-    f * Math.pow(x, 5);
+    a + b * x + c * Math.pow(x, 2) + d * Math.pow(x, 3) + e * Math.pow(x, 4) + f * Math.pow(x, 5);
   const wilks_coefficient = 500 / denominator;
   return wilks_coefficient * lifted;
 };
@@ -38,16 +33,12 @@ const renderChart = (exercise, dim, data, dates, w, h, zeroed) => {
     .attr("height", h)
     .append("g")
     .attr("transform", `translate(${margin.left},${margin.top})`);
-
   let x = d3.scaleTime().rangeRound([0, width]);
-
   let y = d3.scaleLinear().rangeRound([height, 0]);
-
   let line = d3
     .line()
     .x(d => x(d.date))
     .y(d => y(d[dim]));
-
   const plate10kgs = "rgb(55, 106, 48)";
   const plate25kgs = "rgb(151, 70, 59)";
   const plate20kgs = "rgb(82, 89, 155)";
@@ -56,10 +47,7 @@ const renderChart = (exercise, dim, data, dates, w, h, zeroed) => {
     .domain(["deadlift", "squat", "press"])
     .range([plate25kgs, plate20kgs, plate10kgs]);
   x.domain(dates);
-  y.domain([
-    zeroed ? 0 : d3.min(data[exercise], d => d[dim]),
-    d3.max(data[exercise], d => d[dim])
-  ]);
+  y.domain([zeroed ? 0 : d3.min(data[exercise], d => d[dim]), d3.max(data[exercise], d => d[dim])]);
   g.append("g")
     .attr("transform", `translate(0,${height})`)
     .call(d3.axisBottom(x).ticks(5))
@@ -103,12 +91,7 @@ const renderChart = (exercise, dim, data, dates, w, h, zeroed) => {
     .attr("cy", d => y(d[dim]))
     .attr("r", 3)
     .append("title")
-    .text(
-      d =>
-        `${d[dim].toLocaleString("en-US", { maximumFractionDigits: 1 })}\n${
-          d.date
-        }`
-    );
+    .text(d => `${d[dim].toLocaleString("en-US", { maximumFractionDigits: 1 })}\n${d.date}`);
 };
 
 // https://developer.mozilla.org/en-US/docs/Web/Events/resize#requestAnimationFrame_customEvent
@@ -219,7 +202,6 @@ d3.csv("2018.csv", r => {
       deadlift: d3.sum(a.filter(f => f.exercise === "deadlift"), e => e.tonnage)
     }))
     .object(d);
-
   const calWH = 20;
   const calWidth = calWH * (maxWeek + 1) + "px";
   const calHeight = calWH * 8 + "px";
@@ -266,16 +248,13 @@ d3.csv("2018.csv", r => {
       appendDays(calBenchRoot, calData, i, j, "bench");
     }
   }
-
   let svg = d3.select("svg#cal-legend");
-
   svg
     .attr("width", 160)
     .attr("height", calHeight)
     .append("g")
     .attr("class", "legendThreshold")
     .attr("transform", "translate(15,10)");
-
   let legend = d3
     .legendColor()
     .labelFormat(".1r")
@@ -283,20 +262,15 @@ d3.csv("2018.csv", r => {
     .shapeWidth(calWH - 2)
     .shapeHeight(calWH - 2)
     .scale(c);
-
   svg.select(".legendThreshold").call(legend);
-
   const maxPerExercise = d3
     .nest()
     .key(r => r.exercise)
     .rollup(a => d3.max(a, e => e.weight))
     .object(d);
-
   // NOTE this only pays attention to the 3 exercises to track the total for
-  const maxPressTotal =
-    maxPerExercise.press + maxPerExercise.squat + maxPerExercise.deadlift;
-  const maxBenchTotal =
-    maxPerExercise.bench + maxPerExercise.squat + maxPerExercise.deadlift;
+  const maxPressTotal = maxPerExercise.press + maxPerExercise.squat + maxPerExercise.deadlift;
+  const maxBenchTotal = maxPerExercise.bench + maxPerExercise.squat + maxPerExercise.deadlift;
   // hardcoded bodyweight in kilograms
   const BODY_WEIGHT = 92;
   document.getElementById("wilks-p").innerHTML = wilksFormula(
