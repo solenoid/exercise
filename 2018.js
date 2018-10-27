@@ -81,7 +81,6 @@ const renderChart = (exercise, dim, data, dates, w, h, zeroed) => {
     .attr("stroke-linecap", "round")
     .attr("stroke-width", 1.5)
     .attr("d", line);
-  // see http://alignedleft.com/tutorials/d3/making-a-scatterplot
   g.selectAll("circle")
     .data(data[exercise])
     .enter()
