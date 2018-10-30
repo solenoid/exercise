@@ -187,8 +187,8 @@ d3.csv("2018.csv", r => {
   const maxWeek = d3.max(d.map(r => dateFns.getISOWeek(r.date)));
   const c = d3
     .scaleThreshold()
-    .domain([0.1, 1, 2, 3, 4])
-    .range(d3.schemeBuPu[6]);
+    .domain([0.1, 1, 2, 3, 4, 5])
+    .range(d3.schemeBuPu[7]);
   const calData = d3
     .nest()
     .key(r => dateFns.getISOWeek(r.date))
