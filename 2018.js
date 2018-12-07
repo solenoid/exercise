@@ -67,10 +67,10 @@ const renderChart = (exercise, dim, data, dates, w, h, zeroed) => {
       dim === "weight"
         ? "max weight (kgs)"
         : dim === "tonnage"
-          ? "tons (metric)"
-          : dim === "reps"
-            ? "reps (total)"
-            : dim
+        ? "tons (metric)"
+        : dim === "reps"
+        ? "reps (total)"
+        : dim
     );
   g.append("path")
     .datum(data[exercise])
