@@ -184,14 +184,27 @@ d3.csv("2018.csv", r => {
   let startOfMonth = new Date(+startDate);
   startOfMonth.setDate(1);
   let dates = [startOfMonth, endDate];
-  const maxWeek = d3.max(d.map(r => dateFns.getISOWeek(r.date)));
+  const weekAdjust = d => {
+    // push last and first week weirdness off of ISO standards see
+    // https://en.wikipedia.org/wiki/ISO_week_date#First_week
+    const isoWeek = dateFns.getISOWeek(d);
+    const month = dateFns.getMonth(d);
+    if (month === 11 && isoWeek === 1) {
+      return 53;
+    } else if (month === 0 && isoWeek >= 52) {
+      return 0;
+    } else {
+      return isoWeek;
+    }
+  };
+  const maxWeek = d3.max(d.map(r => weekAdjust(r.date)));
   const c = d3
     .scaleThreshold()
     .domain([0.1, 1, 2, 3, 4, 5])
     .range(d3.schemeBuPu[7]);
   const calData = d3
     .nest()
-    .key(r => dateFns.getISOWeek(r.date))
+    .key(r => weekAdjust(r.date))
     .key(r => dateFns.getISODay(r.date))
     .rollup(a => ({
       total: d3.sum(a, e => e.tonnage),
