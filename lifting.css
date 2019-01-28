@@ -77,11 +77,6 @@ svg#cal-legend {
 svg {
   display: block;
 }
-svg text {
-  /* font-size: 8px; */
-}
-.tick {
-}
 .totals {
   font-size: 18px;
 }
