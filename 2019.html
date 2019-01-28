@@ -1,62 +1,57 @@
 <!DOCTYPE html>
-<html lang=en-us>
-<meta charset=utf-8>
-<title>Exercise 2019</title>
-<meta name=viewport content="width=device-width,initial-scale=1">
-<link rel=icon href=deadlift.png>
-<link rel=stylesheet href=lifting.css>
-<h2>2019
-<span class="totals">
-  <span class="label">tons</span>
-  <span id="tons"></span>
-  <span class="label">wilksP</span>
-  <span id="wilks-p"></span>
-  <span id="bench-wilks">
-    <span class="label">wilksB</span>
-    <span id="wilks-b"></span>
-  </span>
-</span></h2>
-<div class="squat">
-  <h3>Squat</h3>
-  <svg id="squat-weight"></svg>
-  <svg id="squat-reps"></svg>
-  <svg id="squat-tonnage"></svg>
-</div>
-<div class="deadlift">
-  <h3>Deadlift</h3>
-  <svg id="deadlift-weight"></svg>
-  <svg id="deadlift-reps"></svg>
-  <svg id="deadlift-tonnage"></svg>
-</div>
-<div class="press">
-  <h3>Press</h3>
-  <svg id="press-weight"></svg>
-  <svg id="press-reps"></svg>
-  <svg id="press-tonnage"></svg>
-</div>
-<div class="bench">
-  <h3>Bench</h3>
-  <svg id="bench-weight"></svg>
-  <svg id="bench-reps"></svg>
-  <svg id="bench-tonnage"></svg>
-</div>
-<div class="cal">
-  <h4>Total Daily tonnage in metric tons for weeks in 2019</h4>
-  <div class="cal-grid cal-grid-total"></div>
-  <svg id="cal-legend"></svg>
-  <h4>Squat tonnage</h4>
-  <div class="cal-grid cal-grid-squat"></div>
-  <h4>Deadlift tonnage</h4>
-  <div class="cal-grid cal-grid-deadlift"></div>
-  <h4>Press tonnage</h4>
-  <div class="cal-grid cal-grid-press"></div>
-  <div id="bench-cal">
-    <h4>Bench tonnage</h4>
-    <div class="cal-grid cal-grid-bench"></div>
-  </div>
-</div>
-<span id="variants"></span>
-<script src="d3.js"></script>
-<script src="d3-legend.js"></script>
-<script src="date_fns.js"></script>
-<script src="2019.js"></script>
+<html lang="en-us">
+  <head>
+    <meta charset="utf-8" />
+    <title>Exercise 2019</title>
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <link rel="icon" href="deadlift.png" />
+    <link rel="stylesheet" href="lifting.css" />
+  </head>
+  <body>
+    <h2>
+      2019
+      <span class="totals">
+        <span class="label">tons</span> <span id="tons"></span> <span class="label">wilksP</span>
+        <span id="wilks-p"></span>
+        <span id="bench-wilks"> <span class="label">wilksB</span> <span id="wilks-b"></span> </span>
+      </span>
+    </h2>
+    <div class="squat">
+      <h3>Squat</h3>
+      <svg id="squat-weight"></svg> <svg id="squat-reps"></svg> <svg id="squat-tonnage"></svg>
+    </div>
+    <div class="deadlift">
+      <h3>Deadlift</h3>
+      <svg id="deadlift-weight"></svg> <svg id="deadlift-reps"></svg>
+      <svg id="deadlift-tonnage"></svg>
+    </div>
+    <div class="press">
+      <h3>Press</h3>
+      <svg id="press-weight"></svg> <svg id="press-reps"></svg> <svg id="press-tonnage"></svg>
+    </div>
+    <div class="bench">
+      <h3>Bench</h3>
+      <svg id="bench-weight"></svg> <svg id="bench-reps"></svg> <svg id="bench-tonnage"></svg>
+    </div>
+    <div class="cal">
+      <h4>Total Daily tonnage in metric tons for weeks in 2019</h4>
+      <div class="cal-grid cal-grid-total"></div>
+      <svg id="cal-legend"></svg>
+      <h4>Squat tonnage</h4>
+      <div class="cal-grid cal-grid-squat"></div>
+      <h4>Deadlift tonnage</h4>
+      <div class="cal-grid cal-grid-deadlift"></div>
+      <h4>Press tonnage</h4>
+      <div class="cal-grid cal-grid-press"></div>
+      <div id="bench-cal">
+        <h4>Bench tonnage</h4>
+        <div class="cal-grid cal-grid-bench"></div>
+      </div>
+    </div>
+    <span id="variants"></span>
+    <script src="d3.js"></script>
+    <script src="d3-legend.js"></script>
+    <script src="date_fns.js"></script>
+    <script src="2019.js"></script>
+  </body>
+</html>
