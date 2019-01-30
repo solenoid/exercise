@@ -148,10 +148,6 @@ d3.csv("2019.csv", r => {
     date: new Date(r.date),
     exercise: r.exercise.split(" ")[0],
     variant: r.exercise.split(" ")[1],
-    competition:
-      r.exercise === "deadlift conventional" ||
-      r.exercise === "squat low" ||
-      r.exercise === "press overhead",
     // assume all weight has been converted to kgs regardless of data entry
     tonnage: d3.sum(allSets, d => d.tonnage) / 1000,
     weight: d3.max(allSets.map(d => d.weight)),
@@ -159,18 +155,12 @@ d3.csv("2019.csv", r => {
   };
 }).then(d => {
   let u = new URL(document.location);
-  let showAllOnly = null == u.searchParams.get("comp");
   let zeroed = null != u.searchParams.get("zero");
-  if (!showAllOnly) {
-    d = d.filter(r => r.competition);
-  }
   document.getElementById("variants").innerHTML = `<p>Showing ${
-    showAllOnly ? "all variants" : "comp only"
-  } ${zeroed ? "zeroed" : ""}</p>
-  <p><a href='${linkURL("")}'>See all variants</a></p>
-  <p><a href='${linkURL("?comp")}'>See comp only</a></p>
-  <p><a href='${linkURL("?zero")}'>See all variants zeroed</a></p>
-  <p><a href='${linkURL("?comp&zero")}'>See comp only zeroed</a></p>`;
+    zeroed ? "zeroed" : "Data based"
+  } scale</p>
+  <p><a href='${linkURL("")}'>Scale Min based on Data</a></p>
+  <p><a href='${linkURL("?zero")}'>Scale Min at Zero</a></p>`;
   const tons = d3.sum(d, r => r.tonnage);
   document.getElementById("tons").innerHTML = tons.toLocaleString("en-US", {
     maximumFractionDigits: 0
