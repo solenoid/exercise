@@ -201,8 +201,8 @@ d3.csv("2019.csv", r => {
   const maxWeek = d3.max(d.map(r => weekAdjust(r.date)));
   const c = d3
     .scaleThreshold()
-    .domain([0.1, 1, 2, 3, 4, 5])
-    .range(d3.schemeBuPu[7]);
+    .domain([1, 2, 3, 4, 5])
+    .range(d3.schemeBuPu[6]);
   const calData = d3
     .nest()
     .key(r => weekAdjust(r.date))
