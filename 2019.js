@@ -1,6 +1,6 @@
 // curl -o d3.js https://d3js.org/d3.v5.js
 // curl -o d3-legend.js https://cdnjs.cloudflare.com/ajax/libs/d3-legend/2.25.6/d3-legend.js
-// curl -o date_fns.js https://cdnjs.cloudflare.com/ajax/libs/date-fns/1.29.0/date_fns.js
+// curl -o date_fns.js https://cdnjs.cloudflare.com/ajax/libs/date-fns/1.30.1/date_fns.js
 
 // see https://en.wikipedia.org/wiki/Wilks_Coefficient#Equation
 // Values for men are:
