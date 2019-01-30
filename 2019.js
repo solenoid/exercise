@@ -151,8 +151,7 @@ d3.csv("2019.csv", r => {
     competition:
       r.exercise === "deadlift conventional" ||
       r.exercise === "squat low" ||
-      r.exercise === "press overhead" ||
-      r.exercise === "bench",
+      r.exercise === "press overhead",
     // assume all weight has been converted to kgs regardless of data entry
     tonnage: d3.sum(allSets, d => d.tonnage) / 1000,
     weight: d3.max(allSets.map(d => d.weight)),
@@ -211,7 +210,6 @@ d3.csv("2019.csv", r => {
       total: d3.sum(a, e => e.tonnage),
       squat: d3.sum(a.filter(f => f.exercise === "squat"), e => e.tonnage),
       press: d3.sum(a.filter(f => f.exercise === "press"), e => e.tonnage),
-      bench: d3.sum(a.filter(f => f.exercise === "bench"), e => e.tonnage),
       deadlift: d3.sum(a.filter(f => f.exercise === "deadlift"), e => e.tonnage)
     }))
     .object(d);
@@ -234,10 +232,6 @@ d3.csv("2019.csv", r => {
     .select(".cal-grid-press")
     .style("width", calWidth)
     .style("height", calHeight);
-  let calBenchRoot = d3
-    .select(".cal-grid-bench")
-    .style("width", calWidth)
-    .style("height", calHeight);
   const days = [null, "Mo", "Tu", "We", "Th", "Fr", "Sa", "Su"];
   const appendDays = (root, d, i, j, f) => {
     const val = ((d[i] || {})[j] || {})[f] || 0;
@@ -258,7 +252,6 @@ d3.csv("2019.csv", r => {
       appendDays(calSquatRoot, calData, i, j, "squat");
       appendDays(calDeadliftRoot, calData, i, j, "deadlift");
       appendDays(calPressRoot, calData, i, j, "press");
-      appendDays(calBenchRoot, calData, i, j, "bench");
     }
   }
   let svg = d3.select("svg#cal-legend");
@@ -287,20 +280,11 @@ d3.csv("2019.csv", r => {
     maxPerExercise.squat,
     maxPerExercise.deadlift
   ]);
-  const maxBenchTotal = d3.sum([
-    maxPerExercise.bench,
-    maxPerExercise.squat,
-    maxPerExercise.deadlift
-  ]);
   // hardcoded bodyweight in kilograms
   const BODY_WEIGHT = 93;
   document.getElementById("wilks-p").innerHTML = wilksFormula(
     BODY_WEIGHT,
     maxPressTotal
-  ).toLocaleString("en-US", { maximumFractionDigits: 0 });
-  document.getElementById("wilks-b").innerHTML = wilksFormula(
-    BODY_WEIGHT,
-    maxBenchTotal
   ).toLocaleString("en-US", { maximumFractionDigits: 0 });
   const redraw = () => {
     // magic constants in portrait and landscape respectively are
@@ -316,15 +300,12 @@ d3.csv("2019.csv", r => {
     renderChart("squat", "weight", nested, dates, w, h, zeroed);
     renderChart("deadlift", "weight", nested, dates, w, h, zeroed);
     renderChart("press", "weight", nested, dates, w, h, zeroed);
-    renderChart("bench", "weight", nested, dates, w, h, zeroed);
     renderChart("squat", "reps", nested, dates, w, h, zeroed);
     renderChart("deadlift", "reps", nested, dates, w, h, zeroed);
     renderChart("press", "reps", nested, dates, w, h, zeroed);
-    renderChart("bench", "reps", nested, dates, w, h, zeroed);
     renderChart("squat", "tonnage", nested, dates, w, h, zeroed);
     renderChart("deadlift", "tonnage", nested, dates, w, h, zeroed);
     renderChart("press", "tonnage", nested, dates, w, h, zeroed);
-    renderChart("bench", "tonnage", nested, dates, w, h, zeroed);
   };
   redraw();
   window.addEventListener("optimizedResize", function() {

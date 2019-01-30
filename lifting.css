@@ -50,9 +50,7 @@ body > div {
 .bench {
   grid-area: bench;
 }
-.bench,
-#bench-cal,
-#bench-wilks {
+.bench {
   display: none;
 }
 
