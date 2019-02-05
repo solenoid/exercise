@@ -2,6 +2,10 @@
 // curl -o d3-legend.js https://cdnjs.cloudflare.com/ajax/libs/d3-legend/2.25.6/d3-legend.js
 // curl -o date_fns.js https://cdnjs.cloudflare.com/ajax/libs/date-fns/1.30.1/date_fns.js
 
+// npm show d3 dist-tags
+// npm show d3-svg-legend dist-tags
+// npm show date-fns dist-tags
+
 // see https://en.wikipedia.org/wiki/Wilks_Coefficient#Equation
 // Values for men are:
 const a = -216.0475144;
