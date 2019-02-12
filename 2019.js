@@ -275,7 +275,7 @@ d3.csv("2019.csv", r => {
     maxPerExercise.deadlift
   ]);
   // hardcoded bodyweight in kilograms
-  const BODY_WEIGHT = 93;
+  const BODY_WEIGHT = 94;
   document.getElementById("wilks-p").innerHTML = wilksFormula(
     BODY_WEIGHT,
     maxPressTotal
