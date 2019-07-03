@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en-us">
+  <head>
+    <meta charset="utf-8" />
+    <title>Biking 2019</title>
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <link rel="icon" href="biking.png" />
+    <link rel="stylesheet" href="biking.css" />
+  </head>
+  <body>
+    <h2>
+      2019 <span class="totals"><span class="label">miles</span> <span id="miles"></span></span>
+    </h2>
+    <div class="overall">
+      <div>
+        <h3>Overall</h3>
+        <svg id="overall"></svg>
+      </div>
+    </div>
+    <div class="distance">
+      <div>
+        <h3>Distance</h3>
+        <svg id="distance"></svg>
+      </div>
+    </div>
+    <div class="time">
+      <div>
+        <h3>Time</h3>
+        <svg id="time"></svg>
+      </div>
+    </div>
+    <div class="speed">
+      <div>
+        <h3>Speed</h3>
+        <svg id="speed"></svg>
+      </div>
+    </div>
+    <div class="cal">
+      <div>
+        <h4>Daily distance (miles) in 2019</h4>
+        <div class="cal-grid cal-grid-distance"></div>
+        <svg class="cal-legend" id="cal-legend-distance"></svg>
+      </div>
+      <div>
+        <h4>Daily time (minutes) in 2019</h4>
+        <div class="cal-grid cal-grid-time"></div>
+        <svg class="cal-legend" id="cal-legend-time"></svg>
+      </div>
+      <div>
+        <h4>Daily speed (mph) in 2019</h4>
+        <div class="cal-grid cal-grid-speed"></div>
+        <svg class="cal-legend" id="cal-legend-speed"></svg>
+      </div>
+    </div>
+    <span id="variants"></span>
+    <script src="d3.js"></script>
+    <script src="d3-legend.js"></script>
+    <script src="date_fns.js"></script>
+    <script src="biking-2019.js"></script>
+
+    <h5>Bikes</h5>
+    <section>
+      <h6>
+        <a href="https://www.wheelworks.com/product/bmc-roadmachine-03-three-310178-1.htm"
+          >Commute</a
+        >
+        (BMC SRAM Apex)
+      </h6>
+      <details>
+        <summary>Specs</summary>
+        <dl>
+          <dt>Frame</dt>
+          <dd>
+            Roadmachine 03 - Tuned Compliance Concept, Al-13 Triple-butted, Hydroformed, Smooth
+            Weld, TCC, Angle Compliance
+          </dd>
+          <dt>Fork</dt>
+          <dd>Roadmachine 03 Carbon, Disc-specific</dd>
+          <dt>Axles</dt>
+          <dd>Front: 12 x 100mm thru-axle<br />Rear: 12 x 142mm thru-axle</dd>
+          <dt>Rims/Wheels</dt>
+          <dd>Novatec 24</dd>
+          <dt>Hubs</dt>
+          <dd>Novatec 24, Thru Axle (12mm)</dd>
+          <dt>Tires</dt>
+          <dd>Vittoria Rubino Control, 28mm</dd>
+          <dt>Crankset</dt>
+          <dd>SRAM Apex1</dd>
+          <dt>Chainrings</dt>
+          <dd>40T</dd>
+          <dt>Bottom Bracket</dt>
+          <dd>PF86</dd>
+          <dt>Chain</dt>
+          <dd>SRAM PC-1110</dd>
+          <dt>Front Derailleur</dt>
+          <dd>N/A</dd>
+          <dt>Rear Derailleur</dt>
+          <dd>SRAM Apex1</dd>
+          <dt>Cassette/Rear Cogs</dt>
+          <dd>SRAM Apex1, 11-42T</dd>
+          <dt>Shifters</dt>
+          <dd>SRAM Apex1</dd>
+          <dt>Handlebars</dt>
+          <dd>BMC RAB 03, ergo top shape, compact bend</dd>
+          <dt>Stem</dt>
+          <dd>BMC RSM 03</dd>
+          <dt>Brakes</dt>
+          <dd>SRAM Apex1 HRD / G2 Cleansweep Rotors (160/160)</dd>
+          <dt>Saddle</dt>
+          <dd>Selle Royal 2075 HRN</dd>
+          <dt>Seat Post</dt>
+          <dd>BMC RSP 03</dd>
+        </dl>
+      </details>
+    </section>
+    <section>
+      <h6>Road (Trek Shimano Ultegra)</h6>
+      <details><summary>Specs</summary>TODO</details>
+    </section>
+    <section>
+      <h6>MTB (Trek)</h6>
+      <details><summary>Specs</summary>TODO</details>
+    </section>
+  </body>
+</html>

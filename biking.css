@@ -1,0 +1,77 @@
+body {
+  font-family: HelveticaNeue, Helvetica Neue, Helvetica, Arial, sans-serif;
+  margin: 0;
+  padding: 5px;
+  box-sizing: content-box;
+  background: #ddd;
+  display: grid;
+  grid-gap: 5px;
+  color: #222;
+  grid-template-areas:
+    "header"
+    "overall"
+    "distance"
+    "time"
+    "speed"
+    "cal";
+}
+h2 {
+  grid-area: header;
+  margin: 0;
+}
+h3 {
+  margin: 4px 0 0 6px;
+  color: #666;
+}
+h4,
+h5,
+h6 {
+  margin: 5px 0;
+}
+.overall {
+  grid-area: overall;
+}
+.distance {
+  grid-area: distance;
+}
+.time {
+  grid-area: time;
+}
+.speed {
+  grid-area: speed;
+}
+.overall > div,
+.distance > div,
+.time > div,
+.speed > div {
+  background: #fff;
+  display: inline-block;
+}
+.cal {
+  grid-area: cal;
+  background: #ddd;
+  position: relative;
+}
+.cal-grid {
+  position: relative;
+  display: inline-block;
+  font-size: 11px;
+  line-height: 19px;
+}
+.cal-grid div {
+  position: absolute;
+  text-align: right;
+}
+svg.cal-legend {
+  display: inline-block;
+}
+svg {
+  display: block;
+}
+.totals {
+  font-size: 18px;
+}
+.totals .label {
+  color: #666;
+  padding-left: 10px;
+}
