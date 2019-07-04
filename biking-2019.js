@@ -146,9 +146,6 @@ d3.csv("biking-2019.csv", r => {
   renderChart(aggs, dates, "distance", zeroed);
   renderChart(aggs, dates, "time", zeroed);
   renderChart(aggs, dates, "speed", zeroed);
-  console.log(aggs);
-  console.log(overallData);
-  // return;
 
   const weekAdjust = d => {
     // push last and first week weirdness off of ISO standards see
