@@ -167,11 +167,11 @@ d3.csv("biking-2019.csv", r => {
   const colorScales = {
     time: d3
       .scaleThreshold()
-      .domain([50, 100, 150, 200])
+      .domain([15, 50, 100, 150])
       .range(d3.schemeBuPu[5]),
     distance: d3
       .scaleThreshold()
-      .domain([10, 20, 30, 40])
+      .domain([5, 10, 20, 30])
       .range(d3.schemeBuPu[5])
   };
   const calData = d3
