@@ -6,8 +6,8 @@
 // npm show d3-svg-legend dist-tags
 // npm show date-fns dist-tags
 
-// see https://bl.ocks.org/mbostock/3883245
-const renderChart = (data, dates, dim, zeroed) => {
+// Visual Component renderers
+const renderChart = (data, dateExtent, dim, zeroed) => {
   const w = 300;
   const h = 125;
   let svg = d3.select(document.getElementById(dim));
@@ -32,7 +32,7 @@ const renderChart = (data, dates, dim, zeroed) => {
     .scaleOrdinal()
     .domain(["overall", "distance", "speed", "time"])
     .range([plate25kgs, "#444", plate20kgs, plate10kgs]);
-  x.domain(dates);
+  x.domain(dateExtent);
   const series = data.map(d => d[dim]);
   y.domain([zeroed ? 0 : d3.min(series), d3.max(series)]);
   g.append("g")
@@ -81,138 +81,33 @@ const renderChart = (data, dates, dim, zeroed) => {
     .append("title")
     .text(d => `${d[dim].toLocaleString("en-US", { maximumFractionDigits: 1 })}\n${d.date}`);
 };
-
-const getAggs = d => {
-  const aggs = d3
-    .nest()
-    .key(r => +r.date)
-    .rollup(a => {
-      const time = d3.sum(a, e => e.time);
-      const distance = d3.sum(a, e => e.distance);
-      return {
-        time,
-        distance,
-        speed: (60 * distance) / time
-      };
-    })
-    .entries(d)
-    .map(({ key, value }) => ({
-      date: new Date(+key),
-      ...value
-    }));
-  // TODO consider washing this into aggs
-  const overallData = aggs.reduce((memo, { date, distance }) => {
-    const { overall } = memo.length ? memo[memo.length - 1] : { overall: 0 };
-    memo.push({ date, overall: overall + distance });
-    return memo;
-  }, []);
-  // TODO consider doing an overall speed too
-  return { aggs, overallData };
-};
-
-const linkURL = search => {
-  let url = new URL(document.location);
-  url.search = search;
-  return url.toString();
-};
-
-// assume the csv is in the correct order so no sorting needed
-d3.csv("biking-2019.csv", r => {
-  return {
-    // assume date parse is sensible
-    date: new Date(r.date),
-    distance: Number(r.distance.split(" ")[0]),
-    time: Number(r.time.split(" ")[0]),
-    route: r.route,
-    bike: r.bike
-  };
-}).then(d => {
-  let u = new URL(document.location);
-  let zeroed = null != u.searchParams.get("zero");
-  document.getElementById("variants").innerHTML = `<p>Showing ${
-    zeroed ? "zeroed" : "Data based"
-  } scale</p>
-  <p><a href='${linkURL("")}'>Scale Min based on Data</a></p>
-  <p><a href='${linkURL("?zero")}'>Scale Min at Zero</a></p>`;
-  const miles = d3.sum(d, r => r.distance);
-  document.getElementById("miles").innerHTML = miles.toLocaleString("en-US", {
-    maximumFractionDigits: 0
-  });
-
-  const { aggs, overallData } = getAggs(d);
-  const dates = d3.extent(d, r => r.date);
-
-  renderChart(overallData, dates, "overall", zeroed);
-  renderChart(aggs, dates, "distance", zeroed);
-  renderChart(aggs, dates, "time", zeroed);
-  renderChart(aggs, dates, "speed", zeroed);
-
-  const weekAdjust = d => {
-    // push last and first week weirdness off of ISO standards see
-    // https://en.wikipedia.org/wiki/ISO_week_date#First_week
-    const isoWeek = dateFns.getISOWeek(d);
-    const month = dateFns.getMonth(d);
-    if (month === 11 && isoWeek === 1) {
-      return 53;
-    } else if (month === 0 && isoWeek >= 52) {
-      return 0;
-    } else {
-      return isoWeek;
-    }
-  };
-  const [minWeek, maxWeek] = d3.extent(d.map(r => weekAdjust(r.date)));
-  const colorScales = {
-    time: d3
-      .scaleThreshold()
-      .domain([15, 50, 100, 150])
-      .range(d3.schemeBuPu[5]),
-    distance: d3
-      .scaleThreshold()
-      .domain([5, 10, 20, 30])
-      .range(d3.schemeBuPu[5])
-  };
-  const calData = d3
-    .nest()
-    .key(r => weekAdjust(r.date))
-    .key(r => dateFns.getISODay(r.date))
-    .rollup(a => ({
-      time: d3.sum(a, e => e.time),
-      distance: d3.sum(a, e => e.distance)
-    }))
-    .object(d);
+const renderCal = (calData, [minWeek, maxWeek], colorScales, dim) => {
   const calWH = 20;
-  const calWidth = calWH * (maxWeek - minWeek + 1) + "px";
+  const calWidth = calWH * (maxWeek - minWeek + 2) + "px";
   const calHeight = calWH * 8 + "px";
-  let calTimeRoot = d3
-    .select(".cal-grid-time")
-    .style("width", calWidth)
-    .style("height", calHeight);
-  let calDistanceRoot = d3
-    .select(".cal-grid-distance")
-    .style("width", calWidth)
-    .style("height", calHeight);
   const days = [null, "Mo", "Tu", "We", "Th", "Fr", "Sa", "Su"];
-  const appendDays = (root, d, i, j, f) => {
-    const val = ((d[i] || {})[j] || {})[f] || 0;
-    root
-      .append("div")
-      .style("background", colorScales[f](val))
-      .style("width", calWH - 4 + "px")
-      .style("padding-right", "2px")
-      .style("height", calWH - 2 + "px")
-      .style("left", (i - minWeek) * calWH + "px")
-      .style("top", j * calWH + "px")
-      .attr("title", val.toLocaleString("en-US", { maximumFractionDigits: 2 }))
-      .text(i !== 0 ? (j === 0 ? i : null) : days[j]);
-  };
-  for (let i = minWeek; i <= maxWeek; i++) {
+  let calRoot = d3
+    .select(`.cal-grid-${dim}`)
+    .style("width", calWidth)
+    .style("height", calHeight);
+  const weekBeforeStart = minWeek - 1;
+  for (let i = weekBeforeStart; i <= maxWeek; i++) {
     for (let j = 0; j <= 7; j++) {
-      appendDays(calTimeRoot, calData, i, j, "time");
-      appendDays(calDistanceRoot, calData, i, j, "distance");
+      const val = ((calData[i] || {})[j] || {})[dim] || 0;
+      calRoot
+        .append("div")
+        .style("background", colorScales[dim](val))
+        .style("width", calWH - 4 + "px")
+        .style("padding-right", "2px")
+        .style("height", calWH - 2 + "px")
+        .style("left", (i - minWeek + 1) * calWH + "px")
+        .style("top", j * calWH + "px")
+        .attr("title", val.toLocaleString("en-US", { maximumFractionDigits: 2 }))
+        .text(i === weekBeforeStart ? days[j] : j === 0 ? i : null);
     }
   }
-  let svg = d3.select("svg#cal-legend-time");
-  svg
+  let legendRoot = d3.select(`svg#cal-legend-${dim}`);
+  legendRoot
     .attr("width", 160)
     .attr("height", calHeight)
     .append("g")
@@ -224,21 +119,110 @@ d3.csv("biking-2019.csv", r => {
     .labels(d3.legendHelpers.thresholdLabels)
     .shapeWidth(calWH - 2)
     .shapeHeight(calWH - 2)
-    .scale(colorScales.time);
-  svg.select(".legendThreshold").call(legend);
-  svg = d3.select("svg#cal-legend-distance");
-  svg
-    .attr("width", 160)
-    .attr("height", calHeight)
-    .append("g")
-    .attr("class", "legendThreshold")
-    .attr("transform", "translate(15,10)");
-  legend = d3
-    .legendColor()
-    .labelFormat(".2r")
-    .labels(d3.legendHelpers.thresholdLabels)
-    .shapeWidth(calWH - 2)
-    .shapeHeight(calWH - 2)
-    .scale(colorScales.distance);
-  svg.select(".legendThreshold").call(legend);
+    .scale(colorScales[dim]);
+  legendRoot.select(".legendThreshold").call(legend);
+};
+// Data Aggregations
+const timeDistanceAndSpeed = a => {
+  const time = d3.sum(a, e => e.time);
+  const distance = d3.sum(a, e => e.distance);
+  return {
+    time,
+    distance,
+    speed: (60 * distance) / time
+  };
+};
+const getChartAggs = d => {
+  const rawAggs = d3
+    .nest()
+    .key(r => +r.date)
+    .rollup(timeDistanceAndSpeed)
+    .entries(d)
+    .map(({ key, value }) => ({
+      date: new Date(+key),
+      ...value
+    }));
+  const aggs = rawAggs.reduce((memo, value) => {
+    const { overall } = memo.length ? memo[memo.length - 1] : { overall: 0 };
+    memo.push({ overall: overall + value.distance, ...value });
+    return memo;
+  }, []);
+  return aggs;
+};
+const weekAdjust = d => {
+  // push last and first week weirdness off of ISO standards see
+  // https://en.wikipedia.org/wiki/ISO_week_date#First_week
+  const isoWeek = dateFns.getISOWeek(d);
+  const month = dateFns.getMonth(d);
+  if (month === 11 && isoWeek === 1) {
+    return 53;
+  } else if (month === 0 && isoWeek >= 52) {
+    return 0;
+  } else {
+    return isoWeek;
+  }
+};
+const getCalAggs = d => {
+  const calendarScaleDomains = {
+    time: [15, 50, 100, 150],
+    distance: [5, 10, 20, 30],
+    speed: [5, 12, 14, 16]
+  };
+  let colorScales = {};
+  for (const [key, value] of Object.entries(calendarScaleDomains)) {
+    colorScales[key] = d3
+      .scaleThreshold()
+      .domain(value)
+      .range(d3.schemeBuPu[value.length + 1]);
+  }
+
+  const calData = d3
+    .nest()
+    .key(r => weekAdjust(r.date))
+    .key(r => dateFns.getISODay(r.date))
+    .rollup(timeDistanceAndSpeed)
+    .object(d);
+  return { calData, colorScales };
+};
+// Data fetch and render coordination
+d3.csv("biking-2019.csv", r => {
+  // assume the csv is in the correct order so no sorting needed
+  return {
+    // assume date parse is sensible
+    date: new Date(r.date),
+    distance: Number(r.distance.split(" ")[0]),
+    time: Number(r.time.split(" ")[0]),
+    route: r.route,
+    bike: r.bike
+  };
+}).then(d => {
+  const u = new URL(document.location);
+  const zeroed = null != u.searchParams.get("zero");
+  const linkURL = search => {
+    let url = new URL(document.location);
+    url.search = search;
+    return url.toString();
+  };
+  document.getElementById("variants").innerHTML = `<p>Showing ${
+    zeroed ? "zeroed" : "Data based"
+  } scale</p>
+  <p><a href='${linkURL("")}'>Scale Min based on Data</a></p>
+  <p><a href='${linkURL("?zero")}'>Scale Min at Zero</a></p>`;
+  const miles = d3.sum(d, r => r.distance);
+  document.getElementById("miles").innerHTML = miles.toLocaleString("en-US", {
+    maximumFractionDigits: 0
+  });
+
+  const aggs = getChartAggs(d);
+  const dateExtent = d3.extent(d, r => r.date);
+  renderChart(aggs, dateExtent, "overall", zeroed);
+  renderChart(aggs, dateExtent, "distance", zeroed);
+  renderChart(aggs, dateExtent, "time", zeroed);
+  renderChart(aggs, dateExtent, "speed", zeroed);
+
+  const { calData, colorScales } = getCalAggs(d);
+  const weekExtent = d3.extent(d.map(r => weekAdjust(r.date)));
+  renderCal(calData, weekExtent, colorScales, "distance");
+  renderCal(calData, weekExtent, colorScales, "time");
+  renderCal(calData, weekExtent, colorScales, "speed");
 });
