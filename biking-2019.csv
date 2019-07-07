@@ -1,10 +1,10 @@
 date,time,distance,route,bike
 4/14/19,90 minutes,20 miles,Maynard loop,Road
-4/16/19,80 minutes,18.3 miles,Maynard loop,Road
+4/16/19,80 minutes,18.2 miles,Maynard loop,Road
 4/18/19,120 minutes,15 miles,Stow loop,MTB
 4/21/19,75 minutes,18.3 miles,home -> CA,Road
 4/21/19,80 minutes,18.3 miles,CA -> home,Road
-4/23/19,80 minutes,18.3 miles,Maynard loop,Road
+4/23/19,80 minutes,18.2 miles,Maynard loop,Road
 4/27/19,85 minutes,20 miles,Maynard loop,Commute
 5/1/19,95 minutes,18.3 miles,home -> CA,Commute
 5/1/19,85 minutes,18.3 miles,CA -> home,Commute
@@ -26,3 +26,4 @@ date,time,distance,route,bike
 7/2/19,73 minutes,18.3 miles,CA -> home,Commute
 7/4/19,30 minutes,8.2 miles,home -> Potter,Road
 7/5/19,33 minutes,8.2 miles,home -> White Pond,Road
+7/7/19,67 minutes,18.2 miles,Maynard loop,Road
