@@ -209,8 +209,12 @@ d3.csv("biking-2019.csv", r => {
   <p><a href='${linkURL("")}'>Scale Min based on Data</a></p>
   <p><a href='${linkURL("?zero")}'>Scale Min at Zero</a></p>`;
   const miles = d3.sum(d, r => r.distance);
+  const hours = d3.sum(d, r => r.time) / 60;
   document.getElementById("miles").innerHTML = miles.toLocaleString("en-US", {
     maximumFractionDigits: 0
+  });
+  document.getElementById("hours").innerHTML = hours.toLocaleString("en-US", {
+    maximumFractionDigits: 1
   });
 
   const aggs = getChartAggs(d);
