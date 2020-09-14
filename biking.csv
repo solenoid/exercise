@@ -72,3 +72,8 @@ date,time,distance,route,bike
 8/31/20,124 minutes,29.8 miles,home -> oak hill rd in littleton -> home,Commute
 9/4/20,163 minutes,40.0 miles,home -> flagg hill rd -> end of groton harvard rd -> back home,Commute
 9/6/20,178 minutes,45.2 miles,home -> flagg hill rd -> groton -> back home,Road
+9/12/20,32 minutes,8.4 miles,home -> Potter,Commute
+9/12/20,29 minutes,5.5 miles,Potter -> end of monument,Commute
+9/12/20,26 minutes,5.5 miles, end of monument -> Potter,Commute
+9/12/20,31 minutes,8.4 miles,Potter -> home,Commute
+9/13/20,215 minutes,50.4 miles,home -> picnic st -> nashua rd and reedy meadow rd -> back home,Road
