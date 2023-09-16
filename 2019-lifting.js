@@ -41,8 +41,8 @@ const renderChart = (exercise, dim, data, dates, w, h, zeroed) => {
   let y = d3.scaleLinear().rangeRound([height, 0]);
   let line = d3
     .line()
-    .x(d => x(d.date))
-    .y(d => y(d[dim]));
+    .x((d) => x(d.date))
+    .y((d) => y(d[dim]));
   const plate10kgs = "rgb(55, 106, 48)";
   const plate25kgs = "rgb(151, 70, 59)";
   const plate20kgs = "rgb(82, 89, 155)";
@@ -52,7 +52,7 @@ const renderChart = (exercise, dim, data, dates, w, h, zeroed) => {
     .range([plate25kgs, plate20kgs, plate10kgs]);
   x.domain(dates);
   const series = data[exercise] || [];
-  y.domain([zeroed ? 0 : d3.min(series, d => d[dim]), d3.max(series, d => d[dim])]);
+  y.domain([zeroed ? 0 : d3.min(series, (d) => d[dim]), d3.max(series, (d) => d[dim])]);
   g.append("g")
     .attr("transform", `translate(0,${height})`)
     .call(d3.axisBottom(x).ticks(5))
@@ -91,24 +91,24 @@ const renderChart = (exercise, dim, data, dates, w, h, zeroed) => {
     .enter()
     .append("circle")
     .attr("fill", color(exercise))
-    .attr("cx", d => x(d.date))
-    .attr("cy", d => y(d[dim]))
+    .attr("cx", (d) => x(d.date))
+    .attr("cy", (d) => y(d[dim]))
     .attr("r", 3)
     .append("title")
-    .text(d => `${d[dim].toLocaleString("en-US", { maximumFractionDigits: 1 })}\n${d.date}`);
+    .text((d) => `${d[dim].toLocaleString("en-US", { maximumFractionDigits: 1 })}\n${d.date}`);
 };
 
 // https://developer.mozilla.org/en-US/docs/Web/Events/resize#requestAnimationFrame_customEvent
-(function() {
-  var throttle = function(type, name, obj) {
+(function () {
+  var throttle = function (type, name, obj) {
     obj = obj || window;
     var running = false;
-    var func = function() {
+    var func = function () {
       if (running) {
         return;
       }
       running = true;
-      requestAnimationFrame(function() {
+      requestAnimationFrame(function () {
         obj.dispatchEvent(new CustomEvent(name));
         running = false;
       });
@@ -121,12 +121,12 @@ const renderChart = (exercise, dim, data, dates, w, h, zeroed) => {
 const ENDS_IN_LBS = /lbs$/i;
 const ENDS_IN_KGS = /kgs$/i;
 // assume unlabeled weights are in kgs
-const kgNumber = s =>
+const kgNumber = (s) =>
   s.match(ENDS_IN_LBS)
     ? Number(s.replace(ENDS_IN_LBS, "")) / lbs_in_kgs
     : Number(s.replace(ENDS_IN_KGS, ""));
 
-const linkURL = search => {
+const linkURL = (search) => {
   let url = new URL(document.location);
   url.search = search;
   return url.toString();
@@ -134,30 +134,30 @@ const linkURL = search => {
 
 // assume the csv is in the correct order so no sorting needed
 // assume there are only ever 10 sets to pay attention to
-const ALL_SETS = d3.range(1, 11).map(s => `set${s}`);
-d3.csv("2019.csv", r => {
+const ALL_SETS = d3.range(1, 11).map((s) => `set${s}`);
+d3.csv("./data/2019-lifting.csv", (r) => {
   const recordedMaxWeight = kgNumber(r["max weight"]);
-  let allSets = ALL_SETS.map(s => {
+  let allSets = ALL_SETS.map((s) => {
     const raw = r[s] || "";
     if (raw.length === 0) return null;
     const parts = raw.split("x");
     let info = {};
     info.weight = parts.length === 1 ? recordedMaxWeight : kgNumber(parts[0]);
-    info.reps = d3.sum(parts[parts.length - 1].split("|").map(n => Number(n)));
+    info.reps = d3.sum(parts[parts.length - 1].split("|").map((n) => Number(n)));
     info.tonnage = info.weight * info.reps;
     return info;
-  }).filter(d => d);
+  }).filter((d) => d);
   return {
     // assume date parse is sensible
     date: new Date(r.date),
     exercise: r.exercise.split(" ")[0],
     variant: r.exercise.split(" ")[1],
     // assume all weight has been converted to kgs regardless of data entry
-    tonnage: d3.sum(allSets, d => d.tonnage) / 1000,
-    weight: d3.max(allSets.map(d => d.weight)),
-    reps: d3.sum(allSets.map(d => d.reps))
+    tonnage: d3.sum(allSets, (d) => d.tonnage) / 1000,
+    weight: d3.max(allSets.map((d) => d.weight)),
+    reps: d3.sum(allSets.map((d) => d.reps)),
   };
-}).then(d => {
+}).then((d) => {
   let u = new URL(document.location);
   let zeroed = null != u.searchParams.get("zero");
   document.getElementById("variants").innerHTML = `<p>Showing ${
@@ -165,20 +165,20 @@ d3.csv("2019.csv", r => {
   } scale</p>
   <p><a href='${linkURL("")}'>Scale Min based on Data</a></p>
   <p><a href='${linkURL("?zero")}'>Scale Min at Zero</a></p>`;
-  const tons = d3.sum(d, r => r.tonnage);
+  const tons = d3.sum(d, (r) => r.tonnage);
   document.getElementById("tons").innerHTML = tons.toLocaleString("en-US", {
-    maximumFractionDigits: 0
+    maximumFractionDigits: 0,
   });
   const nested = d3
     .nest()
-    .key(r => r.exercise)
+    .key((r) => r.exercise)
     .object(d);
-  const [startDate, endDate] = d3.extent(d, r => r.date);
+  const [startDate, endDate] = d3.extent(d, (r) => r.date);
   // NOTE this avoids mutating the startDate in the data
   let startOfMonth = new Date(+startDate);
   startOfMonth.setDate(1);
   let dates = [startOfMonth, endDate];
-  const weekAdjust = d => {
+  const weekAdjust = (d) => {
     // push last and first week weirdness off of ISO standards see
     // https://en.wikipedia.org/wiki/ISO_week_date#First_week
     const isoWeek = dateFns.getISOWeek(d);
@@ -191,20 +191,26 @@ d3.csv("2019.csv", r => {
       return isoWeek;
     }
   };
-  const maxWeek = d3.max(d.map(r => weekAdjust(r.date)));
-  const c = d3
-    .scaleThreshold()
-    .domain([1, 2, 3, 4, 5])
-    .range(d3.schemeBuPu[6]);
+  const maxWeek = d3.max(d.map((r) => weekAdjust(r.date)));
+  const c = d3.scaleThreshold().domain([1, 2, 3, 4, 5]).range(d3.schemeBuPu[6]);
   const calData = d3
     .nest()
-    .key(r => weekAdjust(r.date))
-    .key(r => dateFns.getISODay(r.date))
-    .rollup(a => ({
-      total: d3.sum(a, e => e.tonnage),
-      squat: d3.sum(a.filter(f => f.exercise === "squat"), e => e.tonnage),
-      press: d3.sum(a.filter(f => f.exercise === "press"), e => e.tonnage),
-      deadlift: d3.sum(a.filter(f => f.exercise === "deadlift"), e => e.tonnage)
+    .key((r) => weekAdjust(r.date))
+    .key((r) => dateFns.getISODay(r.date))
+    .rollup((a) => ({
+      total: d3.sum(a, (e) => e.tonnage),
+      squat: d3.sum(
+        a.filter((f) => f.exercise === "squat"),
+        (e) => e.tonnage
+      ),
+      press: d3.sum(
+        a.filter((f) => f.exercise === "press"),
+        (e) => e.tonnage
+      ),
+      deadlift: d3.sum(
+        a.filter((f) => f.exercise === "deadlift"),
+        (e) => e.tonnage
+      ),
     }))
     .object(d);
   const calWH = 20;
@@ -265,14 +271,14 @@ d3.csv("2019.csv", r => {
   svg.select(".legendThreshold").call(legend);
   const maxPerExercise = d3
     .nest()
-    .key(r => r.exercise)
-    .rollup(a => d3.max(a, e => e.weight))
+    .key((r) => r.exercise)
+    .rollup((a) => d3.max(a, (e) => e.weight))
     .object(d);
   // NOTE this only pays attention to the 3 exercises to track the total for
   const maxPressTotal = d3.sum([
     maxPerExercise.press,
     maxPerExercise.squat,
-    maxPerExercise.deadlift
+    maxPerExercise.deadlift,
   ]);
   // hardcoded bodyweight in kilograms
   const BODY_WEIGHT = 94;
@@ -302,7 +308,7 @@ d3.csv("2019.csv", r => {
     renderChart("press", "tonnage", nested, dates, w, h, zeroed);
   };
   redraw();
-  window.addEventListener("optimizedResize", function() {
+  window.addEventListener("optimizedResize", function () {
     redraw();
   });
 });
