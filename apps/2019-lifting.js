@@ -1,6 +1,10 @@
 // curl -o d3.js https://d3js.org/d3.v5.js
 // curl -o d3-legend.js https://cdnjs.cloudflare.com/ajax/libs/d3-legend/2.25.6/d3-legend.js
-// curl -o date_fns.js https://cdnjs.cloudflare.com/ajax/libs/date-fns/1.29.0/date_fns.js
+// curl -o date_fns.js https://cdnjs.cloudflare.com/ajax/libs/date-fns/1.30.1/date_fns.js
+
+// npm show d3 dist-tags
+// npm show d3-svg-legend dist-tags
+// npm show date-fns dist-tags
 
 // see https://en.wikipedia.org/wiki/Wilks_Coefficient#Equation
 // Values for men are:
@@ -47,10 +51,8 @@ const renderChart = (exercise, dim, data, dates, w, h, zeroed) => {
     .domain(["deadlift", "squat", "press"])
     .range([plate25kgs, plate20kgs, plate10kgs]);
   x.domain(dates);
-  y.domain([
-    zeroed ? 0 : d3.min(data[exercise], (d) => d[dim]),
-    d3.max(data[exercise], (d) => d[dim]),
-  ]);
+  const series = data[exercise] || [];
+  y.domain([zeroed ? 0 : d3.min(series, (d) => d[dim]), d3.max(series, (d) => d[dim])]);
   g.append("g")
     .attr("transform", `translate(0,${height})`)
     .call(d3.axisBottom(x).ticks(5))
@@ -76,7 +78,7 @@ const renderChart = (exercise, dim, data, dates, w, h, zeroed) => {
         : dim
     );
   g.append("path")
-    .datum(data[exercise])
+    .datum(series)
     .attr("class", "line")
     .attr("fill", "none")
     .attr("stroke", color(exercise))
@@ -85,7 +87,7 @@ const renderChart = (exercise, dim, data, dates, w, h, zeroed) => {
     .attr("stroke-width", 1.5)
     .attr("d", line);
   g.selectAll("circle")
-    .data(data[exercise])
+    .data(series)
     .enter()
     .append("circle")
     .attr("fill", color(exercise))
@@ -133,7 +135,7 @@ const linkURL = (search) => {
 // assume the csv is in the correct order so no sorting needed
 // assume there are only ever 10 sets to pay attention to
 const ALL_SETS = d3.range(1, 11).map((s) => `set${s}`);
-d3.csv("./data/2018-lifting.csv", (r) => {
+d3.csv("../data/2019-lifting.csv", (r) => {
   const recordedMaxWeight = kgNumber(r["max weight"]);
   let allSets = ALL_SETS.map((s) => {
     const raw = r[s] || "";
@@ -150,11 +152,6 @@ d3.csv("./data/2018-lifting.csv", (r) => {
     date: new Date(r.date),
     exercise: r.exercise.split(" ")[0],
     variant: r.exercise.split(" ")[1],
-    competition:
-      r.exercise === "deadlift conventional" ||
-      r.exercise === "squat low" ||
-      r.exercise === "press overhead" ||
-      r.exercise === "bench",
     // assume all weight has been converted to kgs regardless of data entry
     tonnage: d3.sum(allSets, (d) => d.tonnage) / 1000,
     weight: d3.max(allSets.map((d) => d.weight)),
@@ -162,18 +159,12 @@ d3.csv("./data/2018-lifting.csv", (r) => {
   };
 }).then((d) => {
   let u = new URL(document.location);
-  let showAllOnly = null == u.searchParams.get("comp");
   let zeroed = null != u.searchParams.get("zero");
-  if (!showAllOnly) {
-    d = d.filter((r) => r.competition);
-  }
   document.getElementById("variants").innerHTML = `<p>Showing ${
-    showAllOnly ? "all variants" : "comp only"
-  } ${zeroed ? "zeroed" : ""}</p>
-  <p><a href='${linkURL("")}'>See all variants</a></p>
-  <p><a href='${linkURL("?comp")}'>See comp only</a></p>
-  <p><a href='${linkURL("?zero")}'>See all variants zeroed</a></p>
-  <p><a href='${linkURL("?comp&zero")}'>See comp only zeroed</a></p>`;
+    zeroed ? "zeroed" : "Data based"
+  } scale</p>
+  <p><a href='${linkURL("")}'>Scale Min based on Data</a></p>
+  <p><a href='${linkURL("?zero")}'>Scale Min at Zero</a></p>`;
   const tons = d3.sum(d, (r) => r.tonnage);
   document.getElementById("tons").innerHTML = tons.toLocaleString("en-US", {
     maximumFractionDigits: 0,
@@ -201,7 +192,7 @@ d3.csv("./data/2018-lifting.csv", (r) => {
     }
   };
   const maxWeek = d3.max(d.map((r) => weekAdjust(r.date)));
-  const c = d3.scaleThreshold().domain([0.1, 1, 2, 3, 4, 5]).range(d3.schemeBuPu[7]);
+  const c = d3.scaleThreshold().domain([1, 2, 3, 4, 5]).range(d3.schemeBuPu[6]);
   const calData = d3
     .nest()
     .key((r) => weekAdjust(r.date))
@@ -214,10 +205,6 @@ d3.csv("./data/2018-lifting.csv", (r) => {
       ),
       press: d3.sum(
         a.filter((f) => f.exercise === "press"),
-        (e) => e.tonnage
-      ),
-      bench: d3.sum(
-        a.filter((f) => f.exercise === "bench"),
         (e) => e.tonnage
       ),
       deadlift: d3.sum(
@@ -245,10 +232,6 @@ d3.csv("./data/2018-lifting.csv", (r) => {
     .select(".cal-grid-press")
     .style("width", calWidth)
     .style("height", calHeight);
-  let calBenchRoot = d3
-    .select(".cal-grid-bench")
-    .style("width", calWidth)
-    .style("height", calHeight);
   const days = [null, "Mo", "Tu", "We", "Th", "Fr", "Sa", "Su"];
   const appendDays = (root, d, i, j, f) => {
     const val = ((d[i] || {})[j] || {})[f] || 0;
@@ -269,7 +252,6 @@ d3.csv("./data/2018-lifting.csv", (r) => {
       appendDays(calSquatRoot, calData, i, j, "squat");
       appendDays(calDeadliftRoot, calData, i, j, "deadlift");
       appendDays(calPressRoot, calData, i, j, "press");
-      appendDays(calBenchRoot, calData, i, j, "bench");
     }
   }
   let svg = d3.select("svg#cal-legend");
@@ -293,17 +275,16 @@ d3.csv("./data/2018-lifting.csv", (r) => {
     .rollup((a) => d3.max(a, (e) => e.weight))
     .object(d);
   // NOTE this only pays attention to the 3 exercises to track the total for
-  const maxPressTotal = maxPerExercise.press + maxPerExercise.squat + maxPerExercise.deadlift;
-  const maxBenchTotal = maxPerExercise.bench + maxPerExercise.squat + maxPerExercise.deadlift;
+  const maxPressTotal = d3.sum([
+    maxPerExercise.press,
+    maxPerExercise.squat,
+    maxPerExercise.deadlift,
+  ]);
   // hardcoded bodyweight in kilograms
-  const BODY_WEIGHT = 93;
+  const BODY_WEIGHT = 94;
   document.getElementById("wilks-p").innerHTML = wilksFormula(
     BODY_WEIGHT,
     maxPressTotal
-  ).toLocaleString("en-US", { maximumFractionDigits: 0 });
-  document.getElementById("wilks-b").innerHTML = wilksFormula(
-    BODY_WEIGHT,
-    maxBenchTotal
   ).toLocaleString("en-US", { maximumFractionDigits: 0 });
   const redraw = () => {
     // magic constants in portrait and landscape respectively are
@@ -319,15 +300,12 @@ d3.csv("./data/2018-lifting.csv", (r) => {
     renderChart("squat", "weight", nested, dates, w, h, zeroed);
     renderChart("deadlift", "weight", nested, dates, w, h, zeroed);
     renderChart("press", "weight", nested, dates, w, h, zeroed);
-    renderChart("bench", "weight", nested, dates, w, h, zeroed);
     renderChart("squat", "reps", nested, dates, w, h, zeroed);
     renderChart("deadlift", "reps", nested, dates, w, h, zeroed);
     renderChart("press", "reps", nested, dates, w, h, zeroed);
-    renderChart("bench", "reps", nested, dates, w, h, zeroed);
     renderChart("squat", "tonnage", nested, dates, w, h, zeroed);
     renderChart("deadlift", "tonnage", nested, dates, w, h, zeroed);
     renderChart("press", "tonnage", nested, dates, w, h, zeroed);
-    renderChart("bench", "tonnage", nested, dates, w, h, zeroed);
   };
   redraw();
   window.addEventListener("optimizedResize", function () {

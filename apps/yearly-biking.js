@@ -184,7 +184,7 @@ const getCalAggs = (d) => {
   return { calData, colorScales };
 };
 // Data fetch and render coordination
-d3.csv("./data/yearly-biking.csv", (r) => {
+d3.csv("../data/yearly-biking.csv", (r) => {
   // assume the csv is in the correct order so no sorting needed
   return {
     // assume date parse is sensible
